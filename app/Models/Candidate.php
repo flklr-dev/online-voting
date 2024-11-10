@@ -14,13 +14,13 @@ class Candidate extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'student_ID',
+        'student_id',
         'student_name',
         'campaign_statement',
         'picture',
         'partylist',
-        'election_ID',
-        'position_ID',
+        'election_id',
+        'position_id',
         'dateRegistered',
     ];
 
@@ -36,6 +36,7 @@ class Candidate extends Model
     {
         return $this->belongsTo(Position::class, 'position_id', 'position_id');
     }
+    
     
     /**
      * Relationship with Student model.

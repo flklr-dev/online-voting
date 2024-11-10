@@ -53,14 +53,14 @@
                             <td>{{ $election->end_date }}</td>
                             <td>{{ $election->election_status }}</td>
                             <td class="actions">
-                            <button class="edit-btn" data-election="{{ json_encode($election) }}">Edit</button>
+                                <button class="edit-btn" data-election="{{ json_encode($election) }}">Edit</button>
                                 <button class="delete-btn" data-election-id="{{ $election->election_id }}">Delete</button>
                             </td>
                         </tr>
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="7" style="text-align: center;">No elections found.</td>
+                        <td colspan="9" style="text-align: center;">No elections found.</td>
                     </tr>
                 @endif
             </tbody>

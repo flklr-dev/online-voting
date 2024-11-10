@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Student extends Model
+class Student extends Authenticatable
 {
     use HasFactory;
 
@@ -25,8 +26,18 @@ class Student extends Model
         'school_email',
         'faculty',
         'program',
-        'status'
+        'status',
+        'username', // add this to make sure username is set
+        'password', // add this to make sure password is hashed and saved
     ];
+
+    protected $hidden = ['password']; // Hide password field in responses
+
+    // Mutator to automatically hash passwords
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = bcrypt($value);
+    }
 
     // The attributes that should be cast to native types.
     protected $casts = [

@@ -1,0 +1,109 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Header Styling */
+.login-header {
+    background-color: #003399;
+    color: white;
+    text-align: center;
+    width: 100%;
+    padding: 20px;
+    font-size: 24px;
+    top: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Body Styling */
+body {
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+/* Main Container */
+.main-container {
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo */
+.university-logo {
+    width: 100px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+/* University Name */
+.university-name {
+    color: #003399;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* University Vision */
+.university-vision {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Login Form */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-form label {
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+    font-weight: bold;
+}
+
+.login-form input {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.login-form button {
+    padding: 10px;
+    background-color: #003399;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 50%;
+}
+
+.login-form button:hover {
+    background-color: #0056b3;
+}
+
+/* Error Message */
+.error-message {
+    color: red;
+    margin-top: 10px;
+}

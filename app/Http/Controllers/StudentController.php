@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash; 
+use Illuminate\Support\Facades\DB;
+
 
 class StudentController extends Controller
 {
@@ -25,11 +28,8 @@ class StudentController extends Controller
         })->paginate($limit);
 
         $faculties = ['FaCET', 'FALS', 'FBM', 'FNAHS', 'FTED', 'FCGE'];
-
         return view('students.index', compact('students', 'faculties'));
     }
-
-
 
     public function create()
     {
@@ -39,25 +39,28 @@ class StudentController extends Controller
 
     public function store(Request $request)
     {
-        // Validate and create the student
         $validatedData = $request->validate([
-            'student_id' => 'required|string|max:10',
             'fullname' => 'required|string|max:255',
             'school_email' => 'required|email|unique:students',
+            'student_id' => 'required|string|max:10|unique:students',
             'faculty' => 'required|string',
             'program' => 'required|string',
         ]);
 
-        // Set the status to "active" by default
-        $validatedData['status'] = 'active';
+        // Set status to 'active' automatically and hash student_id as password
+        $student = Student::create([
+            'student_id' => $validatedData['student_id'],
+            'fullname' => $validatedData['fullname'],
+            'school_email' => $validatedData['school_email'],
+            'username' => $validatedData['school_email'], // Use school_email as username
+            'password' => Hash::make($validatedData['student_id']), // Hash student_id as password
+            'faculty' => $validatedData['faculty'],
+            'program' => $validatedData['program'],
+            'status' => 'active', // Automatically set status to 'active'
+        ]);
 
-        // Create the student with the validated data
-        Student::create($validatedData);
-
-        // Return JSON response for AJAX requests
-        return response()->json(['success' => true, 'message' => 'Student added successfully!']);
+        return response()->json(['success' => true, 'message' => 'Student added successfully!', 'student' => $student]);
     }
-
 
     public function edit($student_id)
     {
@@ -65,31 +68,49 @@ class StudentController extends Controller
         return view('students.edit', compact('student'));
     }
 
+
     public function update(Request $request, $student_id)
-{
-    $student = Student::findOrFail($student_id); // Fetch original student
+    {
+        $student = Student::findOrFail($student_id);
 
-    $validatedData = $request->validate([
-        'student_id' => 'required|string|unique:students,student_id,' . $student_id . ',student_id',
-        'fullname' => 'required|string|max:255',
-        'school_email' => 'required|email|unique:students,school_email,' . $student_id . ',student_id',
-        'faculty' => 'required|string',
-        'program' => 'required|string',
-        'status' => 'required|in:active,inactive',
-    ]);
+        $validatedData = $request->validate([
+            'fullname' => 'required|string|max:255',
+            'school_email' => 'required|email|unique:students,school_email,' . $student_id . ',student_id',
+            'student_id' => 'required|string|unique:students,student_id,' . $student_id . ',student_id', // New ID
+            'faculty' => 'required|string',
+            'program' => 'required|string',
+            'status' => 'required|in:active,inactive',
+        ]);
 
-    // Handle student_id change
-    if ($validatedData['student_id'] !== $student_id) {
-        $student->student_id = $validatedData['student_id'];
+        DB::beginTransaction(); // Start a transaction
+
+        try {
+            // Step 1: Delete the existing record with the current primary key
+            $student->delete();
+
+            // Step 2: Create a new record with the updated `student_id`
+            $newStudent = Student::create([
+                'student_id' => $validatedData['student_id'],
+                'fullname' => $validatedData['fullname'],
+                'school_email' => $validatedData['school_email'],
+                'username' => $validatedData['school_email'],
+                'password' => Hash::make($validatedData['student_id']), // Ensure password is hashed
+                'faculty' => $validatedData['faculty'],
+                'program' => $validatedData['program'],
+                'status' => $validatedData['status'],
+            ]);
+
+            DB::commit(); // Commit the transaction
+
+            return response()->json(['success' => true, 'message' => 'Student updated successfully!', 'student' => $newStudent]);
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if an error occurs
+
+            return response()->json(['success' => false, 'message' => 'Failed to update student.'], 500);
+        }
     }
 
-    // Update other fields
-    $student->update($validatedData);
-
-    return response()->json(['success' => true, 'message' => 'Student updated successfully!']);
-}
-
-    
     public function destroy($student_id)
     {
         try {

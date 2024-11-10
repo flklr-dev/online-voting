@@ -105,7 +105,7 @@
                 <h2>Add Candidate</h2>
             </div>
         <div class="modal-body">
-            <form id="addForm" method="POST" action="{{ route('candidates.store') }}" enctype="multipart/form-data">
+            <form id="addForm" method="POST" action="{{ route('candidates.store') }}">
                 @csrf
                 <label for="student_id">Student ID:</label>
                 <input type="text" id="student_id" name="student_id" placeholder="Enter student ID" required>
@@ -207,50 +207,4 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script src="{{ asset('js/candidate.js') }}"></script>
-
-<!-- Student Search Script -->
-<script>
-    $(document).ready(function() {
-        $('#student_id').autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: "{{ route('candidates.searchStudents') }}",
-                    method: 'GET',
-                    data: { search: request.term },
-                    success: function(data) {
-                        response(data.map(student => ({
-                            label: `${student.student_id} - ${student.fullname}`,
-                            value: student.student_id,
-                        })));
-                    },
-                    error: function() {
-                        alert('Error fetching students.');
-                    }
-                });
-            },
-            minLength: 1
-        });
-
-        $('#openAddCandidateModal').on('click', function() {
-            $('#addCandidateModal').show();
-        });
-
-        $('#closeAddCandidateModal').on('click', function() {
-            $('#addCandidateModal').hide();
-        });
-
-        $('#closeEditCandidateModal').on('click', function() {
-            $('#editCandidateModal').hide();
-        });
-
-        window.onclick = function(event) {
-            if (event.target === $('#addCandidateModal')[0]) {
-                $('#addCandidateModal').hide();
-            }
-            if (event.target === $('#editCandidateModal')[0]) {
-                $('#editCandidateModal').hide();
-            }
-        };
-    });
-</script>
 @endsection

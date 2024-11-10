@@ -9,8 +9,8 @@
     <title>Online Voting System</title>
 </head>
 <body>  
-    @include('partials.header') <!-- Include header -->
-    @include('partials.sidebar') <!-- Include sidebar -->
+    @include('partials.header')
+    @include('partials.sidebar')
 
     <main class="main-content">
         <h1>Dashboard</h1>
@@ -20,7 +20,7 @@
                     <h3>Total Elections <i class="fas fa-calendar-alt"></i></h3>
                     <p>{{ $totalElections }}</p>
                     <button class="view-more">
-                        <a href="{{ route('elections.index') }}">View More</a> <!-- Anchor inside button -->
+                        <a href="{{ route('elections.index') }}">View More</a>
                     </button>
                 </div>
             </div>
@@ -29,7 +29,7 @@
                     <h3>Ongoing Elections <i class="fas fa-vote-yea"></i></h3>
                     <p>{{ $ongoingElections }}</p>
                     <button class="view-more">
-                        <a href="{{ route('elections.index') }}">View More</a> <!-- Anchor inside button -->
+                        <a href="{{ route('elections.index') }}">View More</a>
                     </button>
                 </div>
             </div>
@@ -44,16 +44,15 @@
             </div>
             <div class="stat-box">
                 <div class="stat-item">
-                    <h3>Total Votes Cast <i class="fas fa-check-square"></i></h3>
+                    <h3>Total Votes Cast <i class="fas fa-envelope-open-text"></i></h3>
                     <p>{{ $totalVotesCast }}</p>
                     <button class="view-more">View More</button>
                 </div>
             </div>
         </div>
 
-
-         <!-- Elections Overview Section -->
-         <div class="elections-overview">
+        <!-- Elections Overview Section -->
+        <div class="elections-overview">
             <h2>Elections Overview</h2>
             <table>
                 <thead>
@@ -63,56 +62,38 @@
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Dummy Data for Elections -->
-                    <tr>
-                        <td>Student Body Election</td>
-                        <td>General</td>
-                        <td>2024-10-01</td>
-                        <td>2024-10-10</td>
-                        <td>Ongoing</td>
-                        <td>
-                            <a href="#">Edit</a> | 
-                            <a href="#">Delete</a> | 
-                            <a href="#">View Details</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Faculty Election</td>
-                        <td>Faculty</td>
-                        <td>2024-09-15</td>
-                        <td>2024-09-30</td>
-                        <td>Completed</td>
-                        <td>
-                            <a href="#">Edit</a> | 
-                            <a href="#">Delete</a> | 
-                            <a href="#">View Details</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Program Election</td>
-                        <td>Program</td>
-                        <td>2024-11-05</td>
-                        <td>2024-11-20</td>
-                        <td>Upcoming</td>
-                        <td>
-                            <a href="#">Edit</a> | 
-                            <a href="#">Delete</a> | 
-                            <a href="#">View Details</a>
-                        </td>
-                    </tr>
+                    @if($recentElections->count() > 0)
+                        @foreach($recentElections as $election)
+                            <tr>
+                                <td>{{ $election->election_name }}</td>
+                                <td>{{ $election->election_type }}</td>
+                                <td>{{ $election->start_date }}</td>
+                                <td>{{ $election->end_date }}</td>
+                                <td>{{ $election->election_status }}</td>
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="5" style="text-align: center;">No elections found.</td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
+
+            <!-- Centered View More Button -->
+            <div class="election-overview">
+                <button class="view-more">
+                    <a href="{{ route('elections.index') }}">View More</a>
+                </button>
+            </div>
         </div>
 
         <!-- Voting Results Overview Section -->
         <div class="voting-results-overview">
             <h2>Voting Results Overview</h2>
-
-            <!-- Filter Form -->
             <div class="filter-form">
                 <label for="electionSelect">Select Election:</label>
                 <select id="electionSelect" onchange="filterResults()">
@@ -130,25 +111,21 @@
                     <option value="position3">Position 3</option>
                 </select>
 
-                <!-- Download Options Positioned Horizontally -->
                 <div class="download-options">
                     <button onclick="downloadCSV()">Download CSV</button>
                     <button onclick="downloadPDF()">Download PDF</button>
                 </div>
             </div>
 
-            <!-- Real-time results for ongoing elections -->
             <div class="results-container">
                 <div class="chart-container">
-                    <canvas id="resultsChart"></canvas> <!-- Placeholder for chart -->
+                    <canvas id="resultsChart"></canvas>
                 </div>
             </div>
         </div>
-
-        
     </main>
-    
-    @include('partials.footer') <!-- Include footer -->
+
+    @include('partials.footer')
 
     <script src="{{ asset('js/script.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

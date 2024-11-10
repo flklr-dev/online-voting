@@ -10,7 +10,7 @@
 
     <div class="container">
         <div class="top-controls">
-            <button id="openAddPositionModal" class="btn-add-position">Add Position</button>
+            <button id="openAddPositionModal" class="btn-add">Add Position</button>
                 <div class="dropdown-show-entries">
                     <label for="entries">Show</label>
                     <select id="entries" onchange="changeEntries(this.value)">

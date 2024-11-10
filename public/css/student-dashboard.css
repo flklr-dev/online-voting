@@ -1,0 +1,580 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    padding: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    display: flex; /* Enable flexbox */
+    flex-direction: column; /* Set direction to column */
+}
+
+/* Header Styles */
+header {
+    background-color: #003399;
+    color: #ffffff;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.web-name {
+    font-size: 24px;
+    margin-left: 10px;
+    transition: opacity 0.3s ease;
+}
+
+/* User Profile Styles */
+.user {
+    display: flex;
+    align-items: center;
+}
+
+.profile-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: 40px;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.username {
+    font-weight: bold;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropbtn {
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #003399;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+.dropdown-content button {
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-weight: 500;
+    color: #fff;
+    width: 100%;
+    text-align: left;
+}
+
+.dropdown-content button:hover {
+    background-color: #0e4bc7;
+    color: white;
+}
+
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 200px;
+    background-color: #f4f4f4;
+    position: fixed;
+    height: 100%;
+    overflow-y: auto;
+    z-index: 10;
+    transition: width 0.3s ease;
+    top: 0;
+    left:0
+}
+
+.sidebar.minimized {
+    width: 60px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 100px;
+}
+
+.sidebar li {
+    margin: 10px 0;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+    z-index: 999;
+}
+
+.sidebar a i {
+    margin-right: 10px;
+}
+
+.sidebar a:hover {
+    background-color: #003399;
+    color: white;
+}
+
+.sidebar a:hover,
+.sidebar a.active { /* Apply hover styles to active links as well */
+    background-color: #003399;
+    color: white;
+}
+
+.sidebar.minimized a i {
+    margin-right: 0;
+    text-align: center;
+    width: 100%;
+}
+
+.sidebar a span {
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.minimized a span {
+    display: none;
+}
+
+/* Main Content Styles */
+.main-content {
+    margin: 10px 20px 10px 220px; /* Adjust margin for sidebar */
+    transition: margin-left 0.3s;
+    padding: 10px;
+    flex:  1; /* Allow this to grow and take available space */
+}
+
+.main-content2 {
+    margin: 90px 20px 10px 220px; /* Adjust margin for sidebar */
+    transition: margin-left 0.3s;
+    padding: 10px;
+    flex:  1; /* Allow this to grow and take available space */
+}
+
+
+#top-header {
+    margin-top: 100px;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.sidebar.minimized ~ .main-content {
+    margin-left: 80px; /* Adjust main content when sidebar is minimized */
+    margin-right: 20px; /* Add margin on the right when minimized */
+    width: calc(100% - 100px);/* Automatically calculate the width */
+}
+
+.main-content.minimized {
+    margin-left: 70px; /* Adjust this to match minimized sidebar width */
+}
+
+
+/* Footer Styles */
+footer {
+    background-color: #00236a;
+    color: white;
+    padding: 3px 0;
+    text-align: center;
+    width: 100%;
+
+}
+
+footer p {
+    margin-left: 200px;
+}
+
+/* Button Styles */
+.burger {
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    margin-right: 20px;
+}
+
+/* Media Query for Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 50px;
+    }
+
+    .main-content {
+        margin-left: 60px;
+    }
+
+    .burger {
+        display: block;
+    }
+
+    .sidebar a {
+        justify-content: center;
+    }
+
+    .sidebar.minimized a i {
+        margin-right: 0;
+    }
+
+    .sidebar.minimized a span {
+        display: none;
+    }
+}
+
+/* Quick Stats Overview */
+.quick-stats {
+    margin-right: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.stat-box {
+    flex: 1;
+    background-color: #00236a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    z-index: 5;
+}
+
+.stat-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers the text horizontally */
+    justify-content: center; /* Centers the text vertically */
+    text-align: center;
+}
+
+.stat-item h3, .stat-item p {
+    margin: 10px 0;
+    text-align: center; /* Ensure text is centered */
+}
+
+.stat-item h3 {
+    font-size: 1.3rem;
+    padding: 20px 20px;
+    min-height: 50px; 
+}
+
+.stat-item p {
+    margin-top: auto;
+    padding-bottom: 20px;
+}
+
+.vote-now {
+    width: 100%;
+    background-color: #FACB10;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    margin-top: auto; /* Pushes the button to the bottom */
+}
+
+.quick-stats .stat-item button a{
+    text-decoration: none;
+    color: #000;
+}
+
+.vote-now:hover {
+    background-color: #ffd940;
+}
+
+
+/* Upcoming Elections Styles */
+.upcoming-stats {
+    display: flex;
+    gap: 40px;
+    margin: 30px 0;
+    width: 98.5%;
+}
+
+#bottom-header {
+    margin-top: 40px;
+}
+
+.stat-box-upcoming {
+    flex: 1;
+    background-color: #ffffff; /* Light gray background */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    border: 0.5px solid #003399;
+}
+
+.stat-item-upcoming {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.stat-item-upcoming h3 {
+    color: #003399; /* Blue color */
+    font-size: 1.3rem;
+}
+
+.stat-item-upcoming p {
+    color: #FACB10; /* Yellow color */
+    margin-top: auto;
+}
+
+/* Your Voting History Table Styles */
+.voting-history-table {
+    margin-top: 40px;
+    width: 100%;
+}
+
+.voting-history-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.voting-history-table th,
+.voting-history-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.voting-history-table th {
+    background-color: #003399;
+    color: white;
+}
+
+.voting-history-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.voting-history-table td {
+    text-align: center;
+}
+
+/* View More Button at Bottom */
+.view-more-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.view-more-container .view-more {
+    background-color: #003399;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+}
+
+.view-more-container .view-more a {
+    text-decoration: none;
+    color: white;
+}
+
+.view-more-container .view-more:hover {
+    background-color: #00236a;
+}
+
+.election-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* Center items */
+    margin: 30px 0;
+}
+
+.election-grid .stat-box {
+    flex: 1 1 calc(25% - 20px); /* Four per row */
+    max-width: calc(25% - 20px);
+    background-color: #00236a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.election-grid .stat-item h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.election-grid .stat-item p {
+    color: #ffffff;
+}
+
+.election-grid .vote-now {
+    width: 100%;
+    background-color: #FACB10;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    margin-top: auto;
+}
+
+.election-grid .vote-now a {
+    color: #000;
+    text-decoration: none;
+}
+
+.election-grid .vote-now:hover {
+    background-color: #ffd940;
+}
+
+.position-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.position-table th, .position-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+}
+.vote-content {
+    margin: 90px 20px 10px 220px; /* Adjust margin for sidebar */
+    transition: margin-left 0.3s;
+    padding: 10px;
+    flex:  1; /* Allow this to grow and take available space */
+    margin-bottom: 10px;
+}
+
+
+.candidate-image {
+    width: 120px;
+    text-align: center;
+}
+
+.candidate-vote label {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.candidate-details h3 {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.candidate-vote {
+    text-align: center;
+    vertical-align: middle;
+    width: 120px;
+}
+
+.candidate-vote input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.candidate-details p {
+    margin: 5px 0;
+    opacity: 0.8;
+}
+
+.candidate-checkbox {
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+
+#submitVote {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#submitVote:hover {
+    background-color: #0056b3;
+}
+
+/* Flash message styling */
+.flash-message {
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.error-message {
+    background-color: #ffcccc;
+    color: #cc0000;
+    border: 1px solid #cc0000;
+}
+
+
+.filter-container {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-dropdown {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    min-width: 200px;
+}
+
+.results-container {
+    margin-top: 20px;
+}
+
+.no-results {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+}

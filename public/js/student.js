@@ -60,15 +60,15 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Handle Add Student form submission
     document.getElementById("addStudentForm").onsubmit = function (e) {
-        e.preventDefault(); // Prevent default form submission
-        var formData = new FormData(this); // Create FormData object
-
-        fetch('/students', { // Adjust the endpoint as necessary
+        e.preventDefault();
+        const formData = new FormData(this);
+    
+        fetch('/students', {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), // Include CSRF token
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
             },
             body: formData
         })
@@ -76,16 +76,18 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             if (data.success) {
                 alert("Student added successfully!");
-                addStudentModal.style.display = "none"; // Close the modal
-                location.reload(); // Refresh the page to see the new student
+                document.getElementById('addStudentModal').style.display = "none";
+                location.reload();
             } else {
                 alert("Error adding student: " + data.message);
             }
         })
         .catch(error => {
-            alert("An error occurred while adding the student. Please try again.");
+            alert("An error occurred. Please try again.");
+            console.error('Error:', error);
         });
     };
+    
     
     const editStudentModal = document.getElementById('editStudentModal');
     // Handle Edit Student

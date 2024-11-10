@@ -36,69 +36,67 @@ class CandidateController extends Controller
     
         return view('candidates.index', compact('candidates', 'elections', 'positions'));
     }
-    
 
-    
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'student_id' => 'required|exists:students,student_id',
-            'election_id' => 'required|exists:elections,election_id',
-            'position_id' => 'required|exists:positions,position_id',
-            'student_name' => 'required|string|max:255',
-            'campaign_statement' => 'nullable|string',
-            'partylist' => 'nullable|string',
-            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'student_id' => 'required|exists:students,student_id',
+                'election_id' => 'required|exists:elections,election_id',
+                'position_id' => 'required|exists:positions,position_id',
+                'student_name' => 'required|string|max:255',
+                'campaign_statement' => 'nullable|string',
+                'partylist' => 'nullable|string',
+                'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
     
-        if ($request->hasFile('picture')) {
-            $fileName = time() . '.' . $request->file('picture')->extension();
-            $request->file('picture')->move(public_path('images/candidates'), $fileName);
-            $validatedData['picture'] = $fileName;
+            if ($request->hasFile('picture')) {
+                $fileName = time() . '.' . $request->file('picture')->extension();
+                $request->file('picture')->move(public_path('images/candidates'), $fileName);
+                $validatedData['picture'] = $fileName;
+            }
+    
+            Candidate::create($validatedData);
+    
+            return response()->json(['success' => true, 'message' => 'Candidate added successfully!']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log validation errors
+            return response()->json(['success' => false, 'message' => $e->errors()], 400);
+        } catch (\Exception $e) {
+            // Log any other errors
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
-    
-        Candidate::create($validatedData);
-    
-        return response()->json(['success' => true, 'message' => 'Candidate added successfully!']);
     }
-    
     
     public function update(Request $request, $id)
     {
         try {
-            $candidate = Candidate::findOrFail($id); // Find the candidate by ID
-    
-            $validated = $request->validate([
-                'election_id' => 'required|integer|exists:elections,election_id',
-                'position_id' => 'required|integer|exists:positions,position_id',
-                'student_id' => 'required|string|exists:students,student_id',
-                'student_name' => 'required|string|max:100',
+            $candidate = Candidate::findOrFail($id);
+
+            $validatedData = $request->validate([
+                'student_id' => 'required|exists:students,student_id',
+                'election_id' => 'required|exists:elections,election_id',
+                'position_id' => 'required|exists:positions,position_id',
+                'student_name' => 'required|string|max:255',
                 'campaign_statement' => 'nullable|string',
                 'partylist' => 'nullable|string|max:100',
                 'picture' => 'nullable|image|max:2048',
             ]);
-    
-            // Handle picture update or keep the old picture
+
             if ($request->hasFile('picture')) {
-                if ($candidate->picture && Storage::exists('public/' . $candidate->picture)) {
-                    Storage::delete('public/' . $candidate->picture); // Delete old picture
-                }
-                $path = $request->file('picture')->store('images/candidates', 'public');
-                $validated['picture'] = $path;
-            } else {
-                $validated['picture'] = $candidate->picture; // Keep existing picture if not updated
+                $fileName = time() . '.' . $request->file('picture')->extension();
+                $request->file('picture')->move(public_path('images/candidates'), $fileName);
+                $validatedData['picture'] = $fileName;
             }
-    
-            // Update candidate details
-            $candidate->update($validated);
-    
+
+            $candidate->update($validatedData);
+
             return response()->json(['success' => true, 'message' => 'Candidate updated successfully!']);
         } catch (\Exception $e) {
-            Log::error('Error updating candidate: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Failed to update candidate.'], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-    
+
     
     public function destroy($id)
     {
@@ -111,14 +109,5 @@ class CandidateController extends Controller
         $candidate->delete();
 
         return response()->json(['success' => true, 'message' => 'Candidate deleted successfully!']);
-    }
-
-    public function searchStudents(Request $request)
-    {
-        $query = $request->get('search', '');
-
-        $students = Student::where('student_id', 'LIKE', "%{$query}%")->get();
-
-        return response()->json($students);
     }
 }

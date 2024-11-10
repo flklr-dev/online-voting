@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <title>@yield('title', 'Online Voting System')</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+        
     @yield('css')
 </head>
 <body>
@@ -19,8 +19,11 @@
     <!-- Header -->
     @include('partials.header')
 
-    <!-- Sidebar -->
-    @include('partials.sidebar')
+    @if(Auth::guard('admin')->check())
+        @include('partials.sidebar') <!-- Admin Sidebar -->
+    @elseif(Auth::guard('student')->check())
+        @include('partials.student-sidebar') <!-- Student Sidebar -->
+    @endif
 
     <!-- Main Content -->
     <div class="main-content">
@@ -37,5 +40,5 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="{{ asset('js/script.js') }}"></script>
 </body>
-
+ 
 </html>

@@ -10,13 +10,16 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Retrieve actual data from the database
-        $totalElections = Election::count(); // Get total number of elections
-        $ongoingElections = Election::where('election_status', 'Ongoing')->count(); // Count ongoing elections
-        $totalVoters = Student::where('status', 'Active')->count(); // Get total number of voters\
-        $totalVotesCast = 10241; // Example voters participated
+        // Fetch required statistics
+        $totalElections = Election::count();
+        $ongoingElections = Election::where('election_status', 'Ongoing')->count();
+        $totalVoters = Student::where('status', 'Active')->count();
+        $totalVotesCast = 10241; // Replace with actual vote counting if needed
 
-        // Pass dummy data to the view
-        return view('home', compact('totalElections', 'totalVoters', 'ongoingElections', 'totalVotesCast'));
+        // Fetch the 5 most recent elections
+        $recentElections = Election::orderBy('start_date', 'desc')->take(5)->get();
+
+        // Pass the data to the view
+        return view('home', compact('totalElections', 'totalVoters', 'ongoingElections', 'totalVotesCast', 'recentElections'));
     }
 }

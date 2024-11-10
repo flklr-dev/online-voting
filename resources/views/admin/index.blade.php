@@ -10,7 +10,7 @@
 
 <div class="container">
     <div class="top-controls">
-        <button id="openAddAdminModal" class="btn-add-admin">Add Admin</button>
+        <button id="openAddAdminModal" class="btn-add">Add Admin</button>
         <div class="search-container">
             <label for="search">Search:</label>
             <input type="text" id="search" placeholder="Search admins" onkeyup="searchAdmins(this.value)">
@@ -32,7 +32,7 @@
                         <td>{{ $admin->admin_id }}</td>
                         <td>{{ $admin->username }}</td>
                         <td class="actions">
-                            <button class="edit-btn" data-admin="{{ json_encode($admin) }}">Edit</button>
+                            <button class="edit-btn" data-admin-id="{{ $admin->admin_id }}">Edit</button>
                             <button class="delete-btn" data-admin-id="{{ $admin->admin_id }}">Delete</button>
                         </td>
                     </tr>
@@ -84,8 +84,9 @@
                 <label for="edit_username">Username:</label>
                 <input type="text" id="edit_username" name="username" required>
 
-                <label for="edit_password">Password:</label>
-                <input type="text" id="edit_password" name="password" required> <!-- Decrypted password -->
+                <!-- New Password field (Leave empty if not changing) -->
+                <label for="edit_password">New Password (Leave empty if not changing):</label>
+                <input type="password" id="edit_password" name="password">
 
                 <button type="submit" class="btn btn-primary">Update Admin</button>
             </form>

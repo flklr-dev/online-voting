@@ -10,15 +10,16 @@ class AdminController extends Controller
 {
     public function index(Request $request)
     {
+        $limit = $request->input('limit', 10);
         $search = $request->input('search');
         $admins = Admin::when($search, function ($query, $search) {
-            return $query->where('admin_id', 'like', "%$search%")
-                         ->orWhere('username', 'like', "%$search%");
-        })->get();
-
+            return $query->where('username', 'like', "%$search%")
+                            ->orWhere('admin_id', 'like', "%$search%");
+        })->paginate($limit);
+    
         return view('admin.index', compact('admins'));
     }
-
+    
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -36,29 +37,48 @@ class AdminController extends Controller
 
     public function edit($id)
     {
-        $admin = Admin::findOrFail($id);
-        $admin->password = Crypt::decrypt($admin->password); // Decrypt password for the edit modal
-
-        return response()->json($admin);
+        $admin = Admin::find($id);
+    
+        if ($admin) {
+            return response()->json([
+                'success' => true,
+                'admin' => $admin,
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Admin not found.',
+            ], 404);
+        }
     }
 
     public function update(Request $request, $id)
     {
         $admin = Admin::findOrFail($id);
-
+    
+        // Validate the request data
         $validatedData = $request->validate([
-            'username' => 'required|string|max:255|unique:admins,username,'.$admin->admin_id.',admin_id',
-            'password' => 'required|string|min:6',
+            'username' => 'required|string|max:255',
+            'password' => 'nullable|string|min:8', // Password is optional, only validate if provided
         ]);
-
-        $admin->update([
-            'username' => $validatedData['username'],
-            'password' => Crypt::encrypt($validatedData['password']),
+    
+        // Update the username
+        $admin->username = $validatedData['username'];
+    
+        // Check if the password was provided and update it
+        if (!empty($validatedData['password'])) {
+            $admin->password = bcrypt($validatedData['password']); // Hash the new password
+        }
+    
+        $admin->save();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin updated successfully!',
         ]);
-
-        return response()->json(['success' => true, 'message' => 'Admin updated successfully']);
     }
-
+    
+    
     public function destroy($id)
     {
         $admin = Admin::findOrFail($id);

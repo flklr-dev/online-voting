@@ -1,29 +1,51 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ElectionController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ResultController;
+use App\Http\Controllers\StudentHomeController;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-Route::post('/logout', function () {
-    // Placeholder action for logout
-    // You can redirect to the home page or any view you like
-    return redirect('/')->with('message', 'Logged out successfully.');
-})->name('logout');
+// Authentication routes
+Route::get('/', [AuthController::class, 'showLoginForm'])->name('login'); // Login form display
+Route::post('/login', [AuthController::class, 'login'])->name('login.post'); // Login form submission
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout'); // Logout
 
-//Admin Dashboard
-Route::resource('students', StudentController::class);
-Route::resource('elections', ElectionController::class);
-Route::resource('positions', PositionController::class);
-Route::get('/candidates/search-students', [CandidateController::class, 'searchStudents'])->name('candidates.searchStudents');
-Route::resource('candidates', CandidateController::class);
-Route::resource('admins', AdminController::class);
-Route::get('/results', function () {
-    return view('results.index'); // Create a results/index.blade.php
-})->name('results.index');
+// Admin Routes - Protected by admin middleware
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home'); // Admin dashboard
+    Route::get('/admin/profile', [ProfileController::class, 'index'])->name('admin.profile'); // Admin profile
+    // Admin management routes
+    Route::resource('admins', AdminController::class); // This defines the index, create, edit, etc. routes for admins
+    // Resource routes for admin functionality
+    Route::resource('students', StudentController::class);
+    Route::resource('elections', ElectionController::class);
+    Route::resource('positions', PositionController::class);
+    Route::resource('candidates', CandidateController::class);
+    Route::get('/results', [ResultController::class, 'index'])->name('results.index');
+    Route::get('/results/{election_id}', [ResultController::class, 'fetchResults']);
+
+    
+
+    
+});
+
+// Student Routes - Protected by student middleware
+Route::middleware(['auth:student'])->group(function () { 
+    // Student Dashboard
+    Route::get('/student-home', [StudentHomeController::class, 'index'])->name('student-home');
+    Route::get('/ongoing-elections', [ElectionController::class, 'ongoingElections'])->name('ongoing-elections.index');
+    Route::get('/vote/{election_id}', [ElectionController::class, 'voteInterface'])->name('vote.interface');
+    Route::post('/vote/store', [ElectionController::class, 'storeVote'])->name('vote.store');
+});
+
+
+// Fallback route in case of undefined routes (Optional)
+Route::fallback(function() {
+    return redirect()->route('login');
+});
