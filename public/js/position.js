@@ -28,6 +28,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
+    // Set default max_vote value to 1 in add form
+    const addMaxVoteInput = document.getElementById('max_vote');
+    addMaxVoteInput.value = 1;
+    addMaxVoteInput.min = 1; // Minimum value for add form
+    
+    // Set minimum value of max_vote in edit form
+    const editMaxVoteInput = document.getElementById('edit_max_vote');
+    editMaxVoteInput.min = 1;
+    
+    // Prevent max_vote from going below 1 in add form
+    addMaxVoteInput.addEventListener('input', function() {
+        if (this.value < 1) {
+            this.value = 1;
+        }
+    });
+    
+    // Prevent max_vote from going below 1 in edit form
+    editMaxVoteInput.addEventListener('input', function() {
+        if (this.value < 1) {
+            this.value = 1;
+        }
+    });
+
     // Add Position
     document.getElementById('addPositionForm').onsubmit = function (e) {
         e.preventDefault();

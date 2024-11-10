@@ -189,7 +189,6 @@ header {
     flex:  1; /* Allow this to grow and take available space */
 }
 
-
 #top-header {
     margin-top: 100px;
     margin-bottom: 30px;
@@ -433,7 +432,6 @@ footer p {
     display: flex;
     flex-direction: column;
     text-align: center;
-    border-radius: 5px;
     box-sizing: border-box;
 }
 
@@ -460,7 +458,16 @@ footer p {
     text-decoration: none;
 }
 
+.election-grid .view-results a {
+    color: #000;
+    text-decoration: none;
+}
+
 .election-grid .vote-now:hover {
+    background-color: #ffd940;
+}
+
+.election-grid .view-results:hover {
     background-color: #ffd940;
 }
 
@@ -483,7 +490,6 @@ footer p {
     flex:  1; /* Allow this to grow and take available space */
     margin-bottom: 10px;
 }
-
 
 .candidate-image {
     width: 120px;
@@ -539,6 +545,53 @@ footer p {
     background-color: #0056b3;
 }
 
+.main-content2 {
+    margin: 90px 20px 10px 220px;
+    transition: margin-left 0.3s;
+    padding: 10px;
+    flex: 1;
+}
+
+.election-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+.election-grid .stat-box h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    margin-top: 30px;
+}
+
+.election-grid .stat-box p {
+    color: #ffffff;
+    margin-bottom: 30px;
+}
+
+.election-grid .view-results {
+    width: 100%;
+    background-color: #FACB10;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    margin-top: auto;
+    bottom: 0;
+}
+
+.election-grid .view-results a {
+    color: #000;
+    text-decoration: none;
+}
+
+.election-grid .view-results:hover {
+    background-color: #ffd940;
+}
+
+
 /* Flash message styling */
 .flash-message {
     margin: 15px 0;
@@ -577,4 +630,107 @@ footer p {
     text-align: center;
     font-size: 1.2rem;
     color: #666;
+}
+
+/* Top Controls Styles */
+.top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+/* Common Table Styles for Student and Election */
+.table-common {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.table-common thead th {
+    background-color: #00236a;
+    color: white;
+    padding: 10px;
+}
+
+.table-common tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.table-common .student-id,
+.table-common .election-id,
+.table-common .has-voted,
+.table-common .election-type {
+    width: 10%;
+}
+
+.table-common th,
+.table-common td {
+    text-align: center;
+}
+
+.table-common tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+.pagination a {
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #00236a;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #007bff;
+    background-color: #fff;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination a:hover {
+    background-color: #00236a;
+    color: #fff;
+}
+
+.pagination .current-page {
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #00236a;
+    border-radius: 4px;
+    background-color: #00236a;
+    color: #fff;
+}
+
+.pagination .prev,
+.pagination .next {
+    padding: 8px 12px;
+    border: 1px solid #00236a;
+    border-radius: 4px;
+    margin: 0 5px;
+    text-decoration: none;
+    color: #00236a;
+    background-color: #fff;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination .prev:hover,
+.pagination .next:hover {
+    background-color: #00236a;
+    color: #fff;
+}
+
+.pagination .disabled {
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f1f1f1;
+    color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
 }

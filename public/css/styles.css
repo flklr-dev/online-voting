@@ -182,6 +182,13 @@ header {
     flex:  1; /* Allow this to grow and take available space */
 }
 
+.main-content2 {
+    margin: 0px 20px 10px 0px; /* Adjust margin for sidebar */
+    transition: margin-left 0.3s;
+    padding: 10px;
+    flex:  1; /* Allow this to grow and take available space */
+}
+
 .main-content h1 {
     margin-top: 100px;
     color: #333;
@@ -288,7 +295,7 @@ footer p {
     margin-bottom: 20px;
 }
 
-.view-more{
+.view-more, .view-results{
     width: 100%;
     position: relative;
     text-decoration: none;
@@ -309,6 +316,10 @@ footer p {
     background-color: #ffd940;
 }
 .vote-now:hover {
+    background-color: #ffd940;
+}
+
+.view-results:hover {
     background-color: #ffd940;
 }
 
@@ -807,67 +818,178 @@ canvas {
 }
 
 
-.filter-container {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.filter-dropdown {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    min-width: 200px;
-}
-
-.results-container {
-    margin-top: 20px;
-}
-
-.no-results {
-    text-align: center;
-    font-size: 1.2rem;
-    color: #666;
-}
-
 .vote-content {
-    padding: 10px;
-    flex: 1;
+    margin: 90px 20px 10px 220px; /* Adjust margin for sidebar */
+    transition: margin-left 0.3s ease;
+    padding: 0;
+    flex:  1; /* Allow this to grow and take available space */
 }
 
-.filter-container {
-    margin-bottom: 20px;
+.results-content {
+    margin: 0px 20px 10px 10px; /* Adjust margin for sidebar */
+    transition: margin-left 0.3s;
+    padding: 10px;
+    flex:  1; /* Allow this to grow and take available space */
+}
+
+.results-grid {
+    margin-right: 20px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    gap: 20px;
 }
 
-.filter-dropdown {
-    padding: 10px;
+.result-box {
+    flex: 1;
+    background-color: #00236a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    z-index: 5;
+}
+
+.result-box h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.result-box p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.view-results-button a {
+    display: inline-block;
+    text-decoration: none;
+    color: white;
+    background-color: #007bff;
+    padding: 10px 20px;
     border-radius: 5px;
-    border: 1px solid #ccc;
-    min-width: 200px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
 }
 
-.results-container {
-    margin-top: 20px;
+.view-results-button a:hover {
+    background-color: #0056b3;
 }
 
-.no-results {
-    text-align: center;
+/* Main container for the election results */
+.show-results-content {
+    margin: 0px 20px 10px 10px; /* Left margin to align with sidebar */
+    padding: 10px;
+    flex: 1; /* Allows this to take available space */
+    color: #333;
+}
+
+/* Title styling */
+.show-results-content h1 {
+    color: #00236a;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Table styling for each position */
+.position-table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+.position-table th {
+    background-color: #003399;
+    color: white;
+    padding: 10px;
+    text-align: left;
+    font-size: 1.1rem;
+}
+
+.position-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+}
+
+/* Candidate image styling */
+.position-table .candidate-image img {
+    width: 115px;
+    height: auto;
+    border-radius: 5px;
+    margin-top: 3px;
+}
+
+/* Candidate details styling */
+.position-table .candidate-details {
+    padding-left: 10px;
+}
+
+.position-table .candidate-details h3 {
+    margin: 0;
     font-size: 1.2rem;
+    color: #00236a;
+}
+
+.position-table .candidate-details p {
+    margin: 5px 0;
     color: #666;
 }
 
-.candidate-details {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-top: 10px;
+.position-table .candidate-details strong {
+    color: #333;
 }
 
-.candidate-image img {
-    width: 100px;
-    border-radius: 8px;
+/* Responsive styling for smaller screens */
+@media (max-width: 768px) {
+    .position-table th, .position-table td {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    .position-table .candidate-image img {
+        width: 80px;
+    }
+
+    .show-results-content h1 {
+        font-size: 1.5rem;
+    }
 }
+
+/* When the sidebar is minimized */
+.sidebar.minimized {
+    width: 60px; /* Adjust as needed for minimized width */
+}
+
+/* Adjust margin when sidebar is minimized */
+.sidebar.minimized + .vote-content {
+    margin-left: 80px; /* Adjusted for minimized sidebar */
+}
+
+/* Styling for candidate votes section */
+.position-table .candidate-votes {
+    text-align: center;
+    font-weight: bold;
+    color: #003399;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.position-table .candidate-votes .votes-count {
+    font-size: 1.5rem;
+    color: #003399;
+
+}
+
+.position-table .candidate-votes .votes-label {
+    font-size: 0.9rem;
+    font-style: bold;
+    color: #FACB10;
+}
+

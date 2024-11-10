@@ -50,7 +50,7 @@
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="2" style="text-align: center;">No positions found</td>
+                        <td colspan="4" style="text-align: center;">No positions found</td>
                     </tr>
                 @endif
             </tbody>
@@ -87,7 +87,7 @@
                     <input type="text" id="position_name" name="position_name" required>
 
                     <label for="max_vote">Maximum Vote:</label>
-                    <input type="number" id="max_vote" name="max_vote" required>
+                    <input type="number" id="max_vote" name="max_vote" min="1" required> <!-- min set to 1 -->
 
                     <button type="submit" class="btn btn-primary">Add Position</button>
                 </form>
@@ -111,13 +111,14 @@
                     <input type="text" id="edit_position_name" name="position_name" required>
 
                     <label for="edit_max_vote">Maximum Vote:</label>
-                    <input type="number" id="edit_max_vote" name="max_vote" required>
+                    <input type="number" id="edit_max_vote" name="max_vote" min="1" required> <!-- min set to 1 -->
 
                     <button type="submit" class="btn btn-primary">Update Position</button>
                 </form>
             </div>
         </div>
     </div>
+
 
 @endsection
 

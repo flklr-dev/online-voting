@@ -20,18 +20,18 @@ class AuthController extends Controller
             session(['user_role' => 'admin']);
             return redirect()->route('home'); // Redirect to admin dashboard
         }
-        
+    
+        // Check student login and ensure status is active
+        $credentials['status'] = 'active'; // Only active students can log in
         if (Auth::guard('student')->attempt($credentials)) {
             session(['user_role' => 'student']);
             return redirect()->route('student-home'); // Redirect to student dashboard
         }
-        
     
-        // If credentials are invalid
-        return back()->withErrors(['username' => 'Invalid credentials provided']);
+        // If credentials are invalid, set error with key 'login' for easy display
+        return back()->withErrors(['login' => 'Invalid credentials! Please, try again.']);
     }
     
-
     public function logout()
     {
         Auth::logout();

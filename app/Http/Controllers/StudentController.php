@@ -27,13 +27,13 @@ class StudentController extends Controller
                         ->orWhere('status', 'like', "%$search%");
         })->paginate($limit);
 
-        $faculties = ['FaCET', 'FALS', 'FBM', 'FNAHS', 'FTED', 'FCGE'];
+        $faculties = ['FaCET', 'FALS', 'FBM', 'FNAHS', 'FTED', 'FCGE', 'FHUSOCOM'];
         return view('students.index', compact('students', 'faculties'));
     }
 
     public function create()
     {
-        $faculties = ['FaCET', 'FALS', 'FBM', 'FNAHS', 'FTED', 'FCGE']; // List of faculties
+        $faculties = ['FaCET', 'FALS', 'FBM', 'FNAHS', 'FTED', 'FCGE', 'FHUSOCOM']; // List of faculties
         return view('students.create', compact('faculties')); // Pass $faculties to the view
     }
 
@@ -53,7 +53,7 @@ class StudentController extends Controller
             'fullname' => $validatedData['fullname'],
             'school_email' => $validatedData['school_email'],
             'username' => $validatedData['school_email'], // Use school_email as username
-            'password' => Hash::make($validatedData['student_id']), // Hash student_id as password
+            'password' => bcrypt($validatedData['student_id']), // Hash student_id as password
             'faculty' => $validatedData['faculty'],
             'program' => $validatedData['program'],
             'status' => 'active', // Automatically set status to 'active'

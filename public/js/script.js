@@ -49,3 +49,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+function searchVotingHistory(query) {
+    const entries = document.getElementById('entries') ? document.getElementById('entries').value : 10;
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('search', query);
+    urlParams.set('limit', entries);
+    window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+}
+
+// Ensure the active sidebar link is set after page reload
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebarLinks = document.querySelectorAll('.sidebar a');
+    sidebarLinks.forEach(link => {
+        if (link.href === window.location.href.split('?')[0]) {
+            link.classList.add('active');
+        }
+    });
+});
+

@@ -39,11 +39,12 @@
         </form>
         </div>
 
-        @if ($errors->any())
+        @if ($errors->has('login'))
             <div class="error-message">
                 {{ $errors->first('login') }}
             </div>
         @endif
+
     </div>
 
 </body>

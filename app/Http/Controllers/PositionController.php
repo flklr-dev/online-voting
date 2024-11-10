@@ -27,12 +27,11 @@ class PositionController extends Controller
     {
         $validatedData = $request->validate([
             'position_name' => 'required|string|max:255',
-            'max_vote' => 'required|string',
+            'max_vote' => 'required|integer|min:1', // Ensure max_vote is at least 1
         ]);
-
+    
         Position::create($validatedData);
-
-        // Return JSON response for AJAX requests
+    
         return response()->json(['success' => true, 'message' => 'Position added successfully!']);
     }
 
@@ -47,10 +46,11 @@ class PositionController extends Controller
         $position = Position::findOrFail($id);
         $validatedData = $request->validate([
             'position_name' => 'required|string|max:255',
-            'max_vote' => 'required|integer|min:1',
+            'max_vote' => 'required|integer|min:1', // Ensure max_vote is at least 1
         ]);
     
         $position->update($validatedData);
+    
         return response()->json(['success' => true, 'message' => 'Position updated successfully!']);
     }
     

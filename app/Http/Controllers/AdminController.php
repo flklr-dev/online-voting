@@ -29,7 +29,7 @@ class AdminController extends Controller
 
         Admin::create([
             'username' => $validatedData['username'],
-            'password' => Crypt::encrypt($validatedData['password']),
+            'password' => bcrypt($validatedData['password']),
         ]);
 
         return response()->json(['success' => true, 'message' => 'Admin added successfully'], 200);

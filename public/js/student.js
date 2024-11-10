@@ -46,6 +46,9 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'FCGE':
                 programs = ['BSC'];
                 break;
+            case 'FHUSOCOM':
+                programs = ['BSDC', 'BSPscyh', 'ABPolSci'];
+                break;
         }
 
         // Clear the current options in the program dropdown
@@ -159,6 +162,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     break;
                 case 'FCGE':
                     programs = ['BSC'];
+                    break;
+                case 'FHUSOCOM':
+                    programs = ['BSDC', 'BSPscyh', 'ABPolSci'];
                     break;
             }
         

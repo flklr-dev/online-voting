@@ -96,25 +96,20 @@
             <h2>Voting Results Overview</h2>
             <div class="filter-form">
                 <label for="electionSelect">Select Election:</label>
-                <select id="electionSelect" onchange="filterResults()">
+                <select id="electionSelect">
                     <option value="">--Select an Election--</option>
-                    <option value="election1">Election 1</option>
-                    <option value="election2">Election 2</option>
-                    <option value="election3">Election 3</option>
+                    @foreach($recentElections as $election)
+                        @if(in_array($election->election_status, ['Ongoing', 'Completed']))
+                            <option value="{{ $election->election_id }}">{{ $election->election_name }}</option>
+                        @endif
+                    @endforeach
                 </select>
 
                 <label for="positionSelect">Select Position:</label>
-                <select id="positionSelect" onchange="filterResults()">
+                <select id="positionSelect">
                     <option value="">--Select a Position--</option>
-                    <option value="position1">Position 1</option>
-                    <option value="position2">Position 2</option>
-                    <option value="position3">Position 3</option>
+                    <!-- Populate dynamically using JS based on the selected election -->
                 </select>
-
-                <div class="download-options">
-                    <button onclick="downloadCSV()">Download CSV</button>
-                    <button onclick="downloadPDF()">Download PDF</button>
-                </div>
             </div>
 
             <div class="results-container">
@@ -128,7 +123,7 @@
     @include('partials.footer')
 
     <script src="{{ asset('js/script.js') }}"></script>
+    <script src="{{ asset('js/votingResults.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ asset('js/results.js') }}"></script>
 </body>
 </html>

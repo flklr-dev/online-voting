@@ -111,16 +111,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const editElectionModal = document.getElementById('editElectionModal');
 
     function initEditModal(election) {
-        flatpickr("#edit_start_date", {
+        const startDateInput = document.getElementById("edit_start_date");
+        const endDateInput = document.getElementById("edit_end_date");
+    
+        // Clear any existing Flatpickr instances before creating a new one
+        if (startDateInput._flatpickr) startDateInput._flatpickr.destroy();
+        if (endDateInput._flatpickr) endDateInput._flatpickr.destroy();
+    
+        flatpickr(startDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
-            defaultDate: new Date(election.start_date.replace(' ', 'T')) // Ensure proper formatting
+            defaultDate: election.start_date.replace(' ', 'T') // Ensure the date format is ISO-like
         });
     
-        flatpickr("#edit_end_date", {
+        flatpickr(endDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
-            defaultDate: new Date(election.end_date.replace(' ', 'T')) // Ensure proper formatting
+            defaultDate: election.end_date.replace(' ', 'T') // Ensure the date format is ISO-like
         });
     }
     

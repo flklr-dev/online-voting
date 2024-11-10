@@ -33,12 +33,6 @@ class Student extends Authenticatable
 
     protected $hidden = ['password']; // Hide password field in responses
 
-    // Mutator to automatically hash passwords
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = bcrypt($value);
-    }
-
     // The attributes that should be cast to native types.
     protected $casts = [
         'created_at' => 'datetime',
