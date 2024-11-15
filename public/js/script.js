@@ -1,7 +1,8 @@
 function changeEntries(value) {
-    const searchQuery = document.getElementById('search').value; // Keep the current search query
-    window.location.href = `?limit=${value}&search=${searchQuery}`; // Reload the page with new limit and search query
+    const searchQuery = document.getElementById('search').value; // Get current search query
+    window.location.href = `?limit=${value}&search=${searchQuery}`; // Reload page with new limit and search query
 }
+
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
     const header = document.querySelector('header');
@@ -50,14 +51,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function searchVotingHistory(query) {
-    const entries = document.getElementById('entries') ? document.getElementById('entries').value : 10;
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('search', query);
-    urlParams.set('limit', entries);
-    window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
-}
-
 // Ensure the active sidebar link is set after page reload
 document.addEventListener('DOMContentLoaded', function () {
     const sidebarLinks = document.querySelectorAll('.sidebar a');
@@ -66,5 +59,19 @@ document.addEventListener('DOMContentLoaded', function () {
             link.classList.add('active');
         }
     });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth <= 768) {
+        sidebar.classList.remove('minimized');
+    }
+});
+
+window.addEventListener("resize", function () {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth <= 768) {
+        sidebar.classList.remove('minimized');
+    }
 });
 

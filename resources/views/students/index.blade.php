@@ -62,20 +62,25 @@
             </tbody>
         </table>
 
-        <div class="pagination">
-            @if ($students->onFirstPage())
-                <span class="prev disabled">Prev</span>
-            @else
-                <a href="{{ $students->previousPageUrl() }}" class="prev">Prev</a>
-            @endif
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ $students->firstItem() }} to {{ $students->lastItem() }} of {{ $students->total() }} entries
+            </div>
+            <div class="pagination">
+                @if ($students->onFirstPage())
+                    <span class="prev disabled">Prev</span>
+                @else
+                    <a href="{{ $students->previousPageUrl() }}" class="prev">Prev</a>
+                @endif
 
-            <span class="current-page">{{ $students->currentPage() }}</span>
+                <span class="current-page">{{ $students->currentPage() }}</span>
 
-            @if ($students->hasMorePages())
-                <a href="{{ $students->nextPageUrl() }}" class="next">Next</a>
-            @else
-                <span class="next disabled">Next</span>
-            @endif
+                @if ($students->hasMorePages())
+                    <a href="{{ $students->nextPageUrl() }}" class="next">Next</a>
+                @else
+                    <span class="next disabled">Next</span>
+                @endif
+            </div>
         </div>
     </div>
 

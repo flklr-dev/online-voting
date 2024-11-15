@@ -80,21 +80,27 @@
         </tbody>
     </table>
 
-    <div class="pagination">
-        @if ($candidates->onFirstPage())
-            <span class="prev disabled">Prev</span>
-        @else
-            <a href="{{ $candidates->previousPageUrl() . '&limit=' . request('limit') }}" class="prev">Prev</a>
-        @endif
+    <div class="pagination-container">
+        <div class="pagination-info">
+            Showing {{ $candidates->firstItem() }} to {{ $candidates->lastItem() }} of {{ $candidates->total() }} entries
+        </div>
+        <div class="pagination">
+            @if ($candidates->onFirstPage())
+                <span class="prev disabled">Prev</span>
+            @else
+                <a href="{{ $candidates->previousPageUrl() }}" class="prev">Prev</a>
+            @endif
 
-        <span class="current-page">{{ $candidates->currentPage() }}</span>
+            <span class="current-page">{{ $candidates->currentPage() }}</span>
 
-        @if ($candidates->hasMorePages())
-            <a href="{{ $candidates->nextPageUrl() . '&limit=' . request('limit') }}" class="next">Next</a>
-        @else
-            <span class="next disabled">Next</span>
-        @endif
+            @if ($candidates->hasMorePages())
+                <a href="{{ $candidates->nextPageUrl() }}" class="next">Next</a>
+            @else
+                <span class="next disabled">Next</span>
+            @endif
+        </div>
     </div>
+
 </div>
 
 <!-- Add Candidate Modal -->

@@ -1,4 +1,3 @@
-<!-- resources/views/results/show.blade.php -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +14,17 @@
 
     <div class="vote-content">
         <h1>{{ $election->election_name }} - Results</h1>
+
+        <a href="{{ route('election.download', ['electionId' => $election->election_id]) }}" class="export-button">
+            Download Results as CSV
+        </a>
+
+        <!-- Display error message if there's any -->
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
 
         @if($positions->isEmpty())
             <div class="no-results">

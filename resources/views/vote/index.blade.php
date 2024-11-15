@@ -72,5 +72,6 @@
     </script>
 
     <script src="{{ asset('js/vote.js') }}"></script>
+    <script src="{{ asset('js/script.js') }}"></script>
 </body>
 </html>

@@ -44,6 +44,27 @@
             @endif
         </tbody>
     </table>
+
+    <div class="pagination-container">
+        <div class="pagination-info">
+            Showing {{ $admins->firstItem() }} to {{ $admins->lastItem() }} of {{ $admins->total() }} entries
+        </div>
+        <div class="pagination">
+            @if ($admins->onFirstPage())
+                <span class="prev disabled">Prev</span>
+            @else
+                <a href="{{ $admins->previousPageUrl() }}" class="prev">Prev</a>
+            @endif
+
+            <span class="current-page">{{ $admins->currentPage() }}</span>
+
+            @if ($admins->hasMorePages())
+                <a href="{{ $admins->nextPageUrl() }}" class="next">Next</a>
+            @else
+                <span class="next disabled">Next</span>
+            @endif
+        </div>
+    </div>
 </div>
 
 <!-- Add Admin Modal -->

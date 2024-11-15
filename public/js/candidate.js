@@ -149,8 +149,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function searchCandidates(query) {
-        fetch(`/candidates?search=${query}`)
-            .then(response => response.text()) // Expect HTML as the response
+        const limitValue = document.getElementById('entries').value || 10;
+        const currentUrl = new URL(window.location.href);
+    
+        // Update URL parameters
+        currentUrl.searchParams.set('search', query);
+        currentUrl.searchParams.set('limit', limitValue);
+    
+        // Fetch candidates with updated search query
+        fetch(currentUrl)
+            .then(response => response.text())
             .then(html => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
@@ -159,15 +167,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Replace the table body with the new filtered data
                 document.getElementById('candidate-body').innerHTML = newTableBody;
             })
-            .catch(error => {
-                console.error('Error fetching candidates:', error);
-            });
+            .catch(error => console.error('Error fetching candidates:', error));
     }
     
     // Attach search function to the input field
     document.getElementById('search').addEventListener('input', function() {
         searchCandidates(this.value); // Call search function as user types
     });
+    
     
     
 });

@@ -14,7 +14,7 @@ class CandidateController extends Controller
 {
     public function index(Request $request)
     {
-        $limit = $request->get('limit', 10); // Pagination limit
+        $limit = $request->input('limit', 10); // Pagination limit
         $search = $request->input('search');
     
         // Modify the search to include election_name and position_name

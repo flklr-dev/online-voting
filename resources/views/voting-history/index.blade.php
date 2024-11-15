@@ -63,23 +63,32 @@
         </div>
 
         <!-- Pagination Links -->
-        <div class="pagination">
-            @if ($votingHistory->onFirstPage())
-                <span class="prev disabled">Prev</span>
-            @else
-                <a href="{{ $votingHistory->previousPageUrl() }}" class="prev">Prev</a>
-            @endif
 
-            <span class="current-page">{{ $votingHistory->currentPage() }}</span>
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ $votingHistory->firstItem() }} to {{ $votingHistory->lastItem() }} of {{ $votingHistory->total() }} entries
+            </div>
+            <div class="pagination">
+                @if ($votingHistory->onFirstPage())
+                    <span class="prev disabled">Prev</span>
+                @else
+                    <a href="{{ $votingHistory->previousPageUrl() }}" class="prev">Prev</a>
+                @endif
 
-            @if ($votingHistory->hasMorePages())
-                <a href="{{ $votingHistory->nextPageUrl() }}" class="next">Next</a>
-            @else
-                <span class="next disabled">Next</span>
-            @endif
+                <span class="current-page">{{ $votingHistory->currentPage() }}</span>
+
+                @if ($votingHistory->hasMorePages())
+                    <a href="{{ $votingHistory->nextPageUrl() }}" class="next">Next</a>
+                @else
+                    <span class="next disabled">Next</span>
+                @endif
+            </div>
         </div>
     </div>
 
     <script src="{{ asset('js/script.js') }}"></script>
+    <script src="{{ asset('js/voting-history.js') }}"></script>
+    
+    @include('partials.footer')
 </body>
 </html>

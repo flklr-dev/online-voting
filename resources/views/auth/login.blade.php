@@ -11,7 +11,7 @@
 
     <!-- Header at the top -->
     <header class="login-header">
-        <h1>University Online Voting System</h1>
+        <p>Online Voting System</p>
     </header>
 
     <div class="main-container">
@@ -23,7 +23,7 @@
 
         <!-- University Vision -->
         <p class="university-vision">
-            A university of excellence, innovation,<br>and inclusion
+            A university of excellence, innovation, <br> and inclusion
         </p>
         <div class="login-form">
         <!-- Login Form -->

@@ -38,24 +38,16 @@
 
     <h1 id="bottom-header">Upcoming Elections</h1>
     <div class="upcoming-stats">
-        <div class="stat-box-upcoming">
-            <div class="stat-item-upcoming">
-                <h3>Student Council Election</h3>
-                <p>Starts on [Date]</p>
+        @forelse($upcomingElections as $election)
+            <div class="stat-box-upcoming">
+                <div class="stat-item-upcoming">
+                    <h3>{{ $election->election_name }}</h3>
+                    <p>Starts on {{ $election->start_date->format('F d, Y') }}</p>
+                </div>
             </div>
-        </div>
-        <div class="stat-box-upcoming">
-            <div class="stat-item-upcoming">
-                <h3>Student Council Election</h3>
-                <p>Starts on [Date]</p>
-            </div>
-        </div>
-        <div class="stat-box-upcoming">
-            <div class="stat-item-upcoming">
-                <h3>Student Council Election</h3>
-                <p>Starts on [Date]</p>
-            </div>
-        </div>
+        @empty
+            <p>No upcoming elections at the moment.</p>
+        @endforelse
     </div>
 
     <h1 id="bottom-header">Your Voting History</h1>
@@ -69,21 +61,22 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>001</td>
-                    <td>Student Body Election</td>
-                    <td>2024-10-05</td>
-                </tr>
-                <tr>
-                    <td>002</td>
-                    <td>Program Council Election</td>
-                    <td>2024-09-30</td>
-                </tr>
+                @forelse ($votingHistory as $vote)
+                    <tr>
+                        <td>{{ $vote->election_id }}</td>
+                        <td>{{ $vote->election_name }}</td>
+                        <td>{{ \Carbon\Carbon::parse($vote->vote_date)->format('F d, Y') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" style="text-align: center;">No voting history available.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
         <div class="view-more-container">
             <button class="view-more">
-                <a href="#">View More</a>
+                <a href="{{ route('voting-history.index') }}">View More</a>
             </button>
         </div>
     </div>
@@ -92,6 +85,5 @@
 @include('partials.footer')
 
 <script src="{{ asset('js/script.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

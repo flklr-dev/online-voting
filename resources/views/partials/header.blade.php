@@ -16,7 +16,6 @@
             @else
                 <span class="username">Guest</span>
             @endif
-
             
             <div class="dropdown">
                 <button class="dropbtn" id="toggleDropdown">▼</button>

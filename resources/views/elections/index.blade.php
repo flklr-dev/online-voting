@@ -66,21 +66,26 @@
             </tbody>
         </table>
 
-        <div class="pagination">
-            @if ($elections->onFirstPage())
-                <span class="prev disabled">Prev</span>
-            @else
-                <a href="{{ $elections->previousPageUrl() . '&limit=' . request('limit') }}" class="prev">Prev</a>
-            @endif
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ $elections->firstItem() }} to {{ $elections->lastItem() }} of {{ $elections->total() }} entries
+            </div>
+            <div class="pagination">
+                @if ($elections->onFirstPage())
+                    <span class="prev disabled">Prev</span>
+                @else
+                    <a href="{{ $elections->previousPageUrl() . '&limit=' . request('limit') }}" class="prev">Prev</a>
+                @endif
 
-            <span class="current-page">{{ $elections->currentPage() }}</span>
+                <span class="current-page">{{ $elections->currentPage() }}</span>
 
-            @if ($elections->hasMorePages())
-                <a href="{{ $elections->nextPageUrl() . '&limit=' . request('limit') }}" class="next">Next</a>
-            @else
-                <span class="next disabled">Next</span>
-            @endif
-        </div>
+                @if ($elections->hasMorePages())
+                    <a href="{{ $elections->nextPageUrl() . '&limit=' . request('limit') }}" class="next">Next</a>
+                @else
+                    <span class="next disabled">Next</span>
+                @endif
+            </div>
+            </div>
     </div>
 
     <!-- Add Election Modal -->
