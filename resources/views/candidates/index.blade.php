@@ -29,7 +29,7 @@
     <table class="table-common candidate-table">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>#</th>
                 <th>Picture</th>
                 <th>Candidate Name</th>
                 <th>Student ID</th>
@@ -44,7 +44,7 @@
             @if ($candidates->count() > 0)
                 @foreach ($candidates as $candidate)
                     <tr>
-                        <td>{{ $candidate->candidate_id }}</td>
+                        <td>{{ $loop->iteration + (($candidates->currentPage() - 1) * $candidates->perPage()) }}</td>
                         <td><img src="{{ asset('images/candidates/' . $candidate->picture) }}" alt="Candidate Image" width="50"></td>
                         <td>{{ $candidate->student_name }}</td>
                         <td>{{ $candidate->student_id }}</td>

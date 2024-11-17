@@ -29,7 +29,7 @@
         <table class="table-common election-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>#</th>
                     <th>Election Name</th>
                     <th>Description</th>
                     <th>Type</th>
@@ -42,16 +42,18 @@
             </thead>
             <tbody id="election-body">
                 @if ($elections->count() > 0)
-                    @foreach ($elections as $election) <!-- Ensure you are looping over $elections -->
-                        <tr>
-                            <td>{{ $election->election_id }}</td>
+                    @foreach ($elections as $election)
+                        <tr data-election-id="{{ $election->election_id }}"
+                            data-start-date="{{ $election->start_date }}"
+                            data-end-date="{{ $election->end_date }}">
+                            <td>{{ $loop->iteration + (($elections->currentPage() - 1) * $elections->perPage()) }}</td>
                             <td>{{ $election->election_name }}</td>
                             <td>{{ $election->description }}</td>
                             <td>{{ $election->election_type }}</td>
-                            <td>{{ $election->restriction }}</td>
+                            <td>{{ $election->restriction ?? 'None' }}</td>
                             <td>{{ $election->start_date }}</td>
                             <td>{{ $election->end_date }}</td>
-                            <td>{{ $election->election_status }}</td>
+                            <td class="election-status">{{ $election->election_status }}</td>
                             <td class="actions">
                                 <button class="edit-btn" data-election="{{ json_encode($election) }}">Edit</button>
                                 <button class="delete-btn" data-election-id="{{ $election->election_id }}">Delete</button>
@@ -74,18 +76,18 @@
                 @if ($elections->onFirstPage())
                     <span class="prev disabled">Prev</span>
                 @else
-                    <a href="{{ $elections->previousPageUrl() . '&limit=' . request('limit') }}" class="prev">Prev</a>
+                    <a href="{{ $elections->previousPageUrl() }}&limit={{ request('limit', 10) }}&search={{ request('search') }}" class="prev">Prev</a>
                 @endif
 
                 <span class="current-page">{{ $elections->currentPage() }}</span>
 
                 @if ($elections->hasMorePages())
-                    <a href="{{ $elections->nextPageUrl() . '&limit=' . request('limit') }}" class="next">Next</a>
+                    <a href="{{ $elections->nextPageUrl() }}&limit={{ request('limit', 10) }}&search={{ request('search') }}" class="next">Next</a>
                 @else
                     <span class="next disabled">Next</span>
                 @endif
             </div>
-            </div>
+        </div>
     </div>
 
     <!-- Add Election Modal -->
@@ -117,21 +119,15 @@
                     <select id="restriction" name="restriction">
                         <option value="" disabled selected>Select Restriction</option>
                     </select>
-                    
+
                     <label for="start_date">Start Date:</label>
                     <input type="text" id="start_date" name="start_date" class="flatpickr-datetime" required>
 
                     <label for="end_date">End Date:</label>
                     <input type="text" id="end_date" name="end_date" class="flatpickr-datetime" required>
 
-                    <!-- Election Status Dropdown -->
                     <label for="election_status">Election Status:</label>
-                    <select id="election_status" name="election_status" required>
-                        <option value="" disabled selected>Select Status</option>
-                        @foreach ($electionStatuses as $election_status)
-                            <option value="{{ $election_status }}">{{$election_status}}</option>
-                        @endforeach
-                    </select>
+                    <input type="text" id="election_status" name="election_status" readonly>
 
                     <button type="submit" class="btn btn-primary">Add Election</button>
                 </form>
@@ -176,14 +172,8 @@
                     <label for="edit_end_date">End Date:</label>
                     <input type="text" id="edit_end_date" name="end_date" class="flatpickr-datetime" required>
 
-                    <!-- Election Status Dropdown -->
                     <label for="edit_election_status">Election Status:</label>
-                    <select id="edit_election_status" name="election_status" required>
-                        <option value="" disabled selected>Select Status</option>
-                        @foreach ($electionStatuses as $election_status)
-                            <option value="{{ $election_status }}">{{$election_status}}</option>
-                        @endforeach
-                    </select>
+                    <input type="text" id="edit_election_status" name="election_status" readonly>
 
                     <button type="submit" class="btn btn-primary">Updated Election</button>
                 </form>

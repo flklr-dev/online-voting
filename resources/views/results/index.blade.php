@@ -14,7 +14,17 @@
 
     <div class="main-content2">
         <h1>Election Results</h1>
-        <div class="election-grid">
+        <div class="filter-container">
+            <label for="academicYearFilter">Filter by Academic Year:</label>
+            <select id="academicYearFilter">
+                <option value="">All</option>
+                @foreach($years as $year)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="election-grid" id="electionGrid">
             @forelse($elections as $election)
                 <div class="stat-box">
                     <h3>{{ $election->election_name }}</h3>

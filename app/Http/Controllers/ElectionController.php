@@ -28,7 +28,13 @@ class ElectionController extends Controller
                         ->orWhere('start_date', 'like', "%$search%")
                         ->orWhere('end_date', 'like', "%$search%")
                         ->orWhere('election_status', 'like', "%$search%");
-        })->paginate($limit);
+        })
+        ->orderByRaw("
+        FIELD(election_status, 'Ongoing', 'Upcoming', 'Completed'),
+        start_date ASC
+        ")
+        
+        ->paginate($limit);
 
         $electionTypes = ['General','Faculty','Program'];
         $electionStatuses = ['Upcoming', 'Ongoing', 'Completed'];
@@ -40,14 +46,14 @@ class ElectionController extends Controller
     {
         $electionTypes = ['General','Faculty','Program']; // List of faculties
 
-        return view('elections.create', compact('electionTypes')); // Pass $faculties to the view
+        return view('elections.create', compact('electionTypes'));
     }
     
     public function create2()
     {
         $electionStatuses = ['Upcoming', 'Ongoing', 'Completed'];
 
-        return view('elections.create2', compact('electionStatuses')); // Pass $faculties to the view
+        return view('elections.create2', compact('electionStatuses')); 
     }
 
 
@@ -63,6 +69,10 @@ class ElectionController extends Controller
                 'end_date' => 'required|date|after:start_date',
                 'election_status' => 'required|string|in:Upcoming,Ongoing,Completed', // Capitalized values
             ]);
+
+            if ($validatedData['election_type'] === 'General') {
+                $validatedData['restriction'] = 'None';
+            }
 
             Election::create($validatedData);
 
@@ -96,6 +106,10 @@ class ElectionController extends Controller
             'restriction' => 'nullable|string',
             'election_status' => 'required|string|in:Upcoming,Ongoing,Completed',
         ]);
+
+        if ($validatedData['election_type'] === 'General') {
+            $validatedData['restriction'] = 'None';
+        }
     
         // Preserve the election_id and apply other validated data
         $election->update($validatedData);
@@ -126,10 +140,32 @@ class ElectionController extends Controller
 
     public function ongoingElections()
     {
-        $ongoingElections = Election::where('election_status', 'Ongoing')->get();
-
+        $student = auth('student')->user(); // Get the authenticated student
+        
+        // Retrieve ongoing elections
+        $ongoingElections = Election::where('election_status', 'Ongoing')
+            ->where(function ($query) use ($student) {
+                // Include General elections
+                $query->where('election_type', 'General')
+                    ->orWhere(function ($query) use ($student) {
+                        // Include Faculty elections that match the student's faculty
+                        $query->where('election_type', 'Faculty')
+                            ->where('restriction', $student->faculty);
+                    })
+                    ->orWhere(function ($query) use ($student) {
+                        // Include Program elections that match the student's program
+                        $query->where('election_type', 'Program')
+                            ->where('restriction', $student->program);
+                    });
+            })
+            ->whereDoesntHave('votes', function ($query) use ($student) {
+                // Exclude elections the student has already voted in
+                $query->where('student_id', $student->student_id);
+            })
+            ->get();
+    
         return view('ongoing-elections.index', compact('ongoingElections'));
-    }
+    }    
 
     // Display the voting interface for a specific election
     public function voteInterface($election_id)
@@ -217,6 +253,23 @@ class ElectionController extends Controller
             return response()->json(['success' => false, 'message' => 'Failed to cast vote.'], 500);
         }
     }
+
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $election = Election::findOrFail($id);
     
+            $validatedData = $request->validate([
+                'election_status' => 'required|string|in:Upcoming,Ongoing,Completed',
+            ]);
+    
+            $election->election_status = $validatedData['election_status'];
+            $election->save();
+    
+            return response()->json(['success' => true, 'message' => 'Election status updated successfully']);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to update election status.'], 500);
+        }
+    }
     
 }

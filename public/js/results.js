@@ -14,5 +14,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    const academicYearFilter = document.getElementById('academicYearFilter');
+    const electionGrid = document.getElementById('electionGrid');
+
+    academicYearFilter.addEventListener('change', function () {
+        const year = this.value;
+
+        // Fetch filtered results via AJAX
+        fetch(`/results?academic_year=${year}`)
+            .then(response => response.text())
+            .then(html => {
+                // Replace the election grid with the new filtered data
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newGrid = doc.querySelector('#electionGrid').innerHTML;
+                electionGrid.innerHTML = newGrid;
+            })
+            .catch(error => {
+                console.error('Error fetching filtered results:', error);
+            });
+    });
 });
 

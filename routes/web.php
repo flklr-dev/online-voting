@@ -25,6 +25,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::resource('admins', AdminController::class);
     Route::resource('students', StudentController::class);
     Route::resource('elections', ElectionController::class);
+    Route::post('/elections/{id}/update-status', [ElectionController::class, 'updateStatus'])->name('elections.update-status'); // New route
     Route::resource('positions', PositionController::class);
     Route::resource('candidates', CandidateController::class);
     Route::resource('results', ResultController::class)->only(['index', 'show']);

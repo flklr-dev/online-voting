@@ -10,14 +10,24 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResultController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Fetch both ongoing and completed elections
-        $elections = Election::whereIn('election_status', ['Ongoing', 'Completed'])->get();
-        
-        return view('results.index', compact('elections'));
-    }
+        // Fetch distinct years from the start_date column
+        $years = Election::selectRaw('YEAR(start_date) as year')->distinct()->pluck('year')->sortDesc();
     
+        // Get the academic_year filter from the request
+        $academicYear = $request->input('academic_year');
+    
+        // Filter elections based on the academic_year if provided
+        $elections = Election::whereIn('election_status', ['Ongoing', 'Completed'])
+            ->when($academicYear, function ($query, $academicYear) {
+                $query->whereYear('start_date', $academicYear);
+            })
+            ->orderByDesc('start_date')
+            ->get();
+    
+        return view('results.index', compact('elections', 'years'));
+    }       
 
     public function show($id)
     {
