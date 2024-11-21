@@ -32,11 +32,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/voting-results', [HomeController::class, 'getVotingResults'])->name('voting.results');
     Route::get('/elections/{election_id}/positions', [HomeController::class, 'getPositionsByElection']);
     Route::get('/election/{electionId}/download-results', [ResultController::class, 'downloadResults'])->name('election.download');
-
-
-    
-
-    
 });
 
 // Student Routes - Protected by student middleware

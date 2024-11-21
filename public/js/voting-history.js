@@ -25,3 +25,9 @@ document.getElementById('search').addEventListener('input', function() {
 document.getElementById('entries').addEventListener('change', function() {
     searchVotingHistory(document.getElementById('search').value);
 });
+
+
+document.getElementById('electionFilter').addEventListener('change', function() {
+    const filter = this.value;
+    searchVotingHistory(document.getElementById('search').value, filter);
+});

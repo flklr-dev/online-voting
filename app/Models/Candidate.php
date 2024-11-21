@@ -32,17 +32,15 @@ class Candidate extends Model
         return $this->belongsTo(Election::class, 'election_id', 'election_id');
     }
     
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id', 'student_id');
+    }
+    
+    
     public function position()
     {
         return $this->belongsTo(Position::class, 'position_id', 'position_id');
     }
     
-    
-    /**
-     * Relationship with Student model.
-     */
-    public function student()
-    {
-        return $this->belongsTo(Student::class, 'student_id', 'student_id');
-    }
 }

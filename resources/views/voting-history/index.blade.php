@@ -14,6 +14,15 @@
 
     <div class="main-content2">
         <h1>Voting History</h1>
+        <div class="filter-container">
+            <label for="electionFilter">Filter by Election:</label>
+            <select id="electionFilter">
+                <option value="">All Elections</option>
+                @foreach($electionNames as $electionName)
+                    <option value="{{ $electionName }}">{{ $electionName }}</option>
+                @endforeach
+            </select>
+        </div>
 
         <!-- Top Controls: Show Entries and Search -->
         <div class="top-controls">

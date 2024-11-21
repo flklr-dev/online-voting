@@ -14,6 +14,7 @@
 
     <div class="main-content2">
         <h1>Election Results</h1>
+        
         <div class="filter-container">
             <label for="academicYearFilter">Filter by Academic Year:</label>
             <select id="academicYearFilter">

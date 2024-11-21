@@ -271,5 +271,7 @@ class ElectionController extends Controller
             return response()->json(['success' => false, 'message' => 'Failed to update election status.'], 500);
         }
     }
+
+    
     
 }
