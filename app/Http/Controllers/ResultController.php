@@ -33,34 +33,35 @@ class ResultController extends Controller
     {
         $election = Election::with(['candidates.position'])->findOrFail($id);
     
-        // Retrieve vote totals for each candidate per position, ordered by position_id
+        // Updated query to use partylist_id and include partylist name
         $positions = DB::table('candidates')
             ->join('positions', 'candidates.position_id', '=', 'positions.position_id')
+            ->join('partylists', 'candidates.partylist_id', '=', 'partylists.partylist_id')
             ->leftJoin('votes', 'candidates.candidate_id', '=', 'votes.candidate_id')
             ->select(
-                'positions.position_id',        // Include position_id for ordering
+                'positions.position_id',
                 'positions.position_name', 
                 'positions.max_vote', 
                 'candidates.candidate_id', 
                 'candidates.student_name', 
                 'candidates.picture', 
                 'candidates.campaign_statement', 
-                'candidates.partylist', 
+                'partylists.name as partylist_name', // Get partylist name instead
                 DB::raw('COUNT(votes.vote_id) as total_votes')
             )
             ->where('candidates.election_id', $id)
             ->groupBy(
-                'positions.position_id',         // Include position_id in groupBy for ordering
+                'positions.position_id',
                 'positions.position_name', 
                 'positions.max_vote', 
                 'candidates.candidate_id', 
                 'candidates.student_name', 
                 'candidates.picture', 
                 'candidates.campaign_statement', 
-                'candidates.partylist'
+                'partylists.name' // Group by partylist name
             )
-            ->orderBy('positions.position_id') // Order by position_id to ensure positions appear in the correct order
-            ->orderBy('total_votes', 'desc')   // Order candidates within each position by total_votes
+            ->orderBy('positions.position_id')
+            ->orderBy('total_votes', 'desc')
             ->get()
             ->groupBy('position_name');
     
@@ -72,14 +73,15 @@ class ResultController extends Controller
         $election = Election::findOrFail($electionId);
         $filename = $election->election_name . "_Results.csv";
     
-        // Fetch election data with total votes per candidate
+        // Updated query to use partylist name
         $results = DB::table('candidates')
             ->join('positions', 'candidates.position_id', '=', 'positions.position_id')
+            ->join('partylists', 'candidates.partylist_id', '=', 'partylists.partylist_id')
             ->leftJoin('votes', 'candidates.candidate_id', '=', 'votes.candidate_id')
             ->select(
                 'candidates.student_name',
                 'positions.position_name',
-                'candidates.partylist',
+                'partylists.name as partylist_name',
                 DB::raw('COUNT(votes.vote_id) as total_votes'),
                 'positions.position_id'
             )
@@ -87,7 +89,7 @@ class ResultController extends Controller
             ->groupBy(
                 'candidates.student_name',
                 'positions.position_name',
-                'candidates.partylist',
+                'partylists.name',
                 'positions.position_id'
             )
             ->orderBy('positions.position_id')
@@ -120,7 +122,7 @@ class ResultController extends Controller
                 fputcsv($file, [
                     $result->student_name,
                     $result->position_name,
-                    $result->partylist,
+                    $result->partylist_name,
                     $result->total_votes,
                 ]);
             }

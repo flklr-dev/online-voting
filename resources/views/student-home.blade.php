@@ -42,11 +42,20 @@
             <div class="stat-box-upcoming">
                 <div class="stat-item-upcoming">
                     <h3>{{ $election->election_name }}</h3>
-                    <p>Starts on {{ $election->start_date->format('F d, Y') }}</p>
+                    <p>
+                        <i class="fas fa-calendar-alt"></i>
+                        Starts on {{ $election->start_date->format('F d, Y') }}
+                    </p>
+                    <p>
+                        <i class="fas fa-clock"></i>
+                        {{ $election->start_date->format('h:i A') }}
+                    </p>
                 </div>
             </div>
         @empty
-            <p>No upcoming elections at the moment.</p>
+            <div class="no-elections">
+                <p>No upcoming elections at the moment.</p>
+            </div>
         @endforelse
     </div>
 
@@ -55,21 +64,25 @@
         <table>
             <thead>
                 <tr>
-                    <th>Election ID</th>
                     <th>Election Name</th>
+                    <th>Position Name</th>
+                    <th>Candidate Name</th>
+                    <th>Partylist</th>
                     <th>Date Voted</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($votingHistory as $vote)
                     <tr>
-                        <td>{{ $vote->election_id }}</td>
                         <td>{{ $vote->election_name }}</td>
-                        <td>{{ \Carbon\Carbon::parse($vote->vote_date)->format('F d, Y') }}</td>
+                        <td>{{ $vote->position_name }}</td>
+                        <td>{{ $vote->candidate_name }}</td>
+                        <td>{{ $vote->partylist }}</td>
+                        <td>{{ \Carbon\Carbon::parse($vote->vote_date)->format('F d, Y h:i A') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" style="text-align: center;">No voting history available.</td>
+                        <td colspan="5" style="text-align: center;">No voting history available.</td>
                     </tr>
                 @endforelse
             </tbody>

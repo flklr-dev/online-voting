@@ -11,8 +11,11 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <title>@yield('title', 'Online Voting System')</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-        
-    @yield('css')
+    
+    <!-- CSS -->
+    <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    @yield('styles')
 </head>
 <body>
     
@@ -33,12 +36,14 @@
     <!-- Footer -->
     @include('partials.footer')
     
-    @yield('scripts')
-        <!-- jQuery and jQuery UI JS -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="{{ asset('js/script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('js/candidate.js') }}"></script>
+    @yield('scripts')
 </body>
  
 </html>

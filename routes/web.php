@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\StudentHomeController;
 use App\Http\Controllers\VotingHistoryController;
+use App\Http\Controllers\PartylistController;
 
 // Authentication routes
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login'); // Login form display
@@ -32,6 +33,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/voting-results', [HomeController::class, 'getVotingResults'])->name('voting.results');
     Route::get('/elections/{election_id}/positions', [HomeController::class, 'getPositionsByElection']);
     Route::get('/election/{electionId}/download-results', [ResultController::class, 'downloadResults'])->name('election.download');
+    Route::post('/partylists', [PartylistController::class, 'store'])->name('partylists.store');
+    Route::get('/get-eligible-students/{election_id}', [CandidateController::class, 'getEligibleStudents']);
 });
 
 // Student Routes - Protected by student middleware
@@ -42,6 +45,8 @@ Route::middleware(['auth:student'])->group(function () {
     Route::get('/vote/{election_id}', [ElectionController::class, 'voteInterface'])->name('vote.interface');
     Route::post('/vote/store', [ElectionController::class, 'storeVote'])->name('vote.store');
     Route::get('/voting-history', [VotingHistoryController::class, 'index'])->name('voting-history.index');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 

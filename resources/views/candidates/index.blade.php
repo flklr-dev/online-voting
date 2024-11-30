@@ -11,6 +11,7 @@
 <div class="container">
     <div class="top-controls">
         <button id="openAddCandidateModal" class="btn-add">Add Candidate</button>
+        <button id="openAddPartylistModal" class="btn-add">Add Partylist</button>
         <div class="dropdown-show-entries">
             <label for="entries">Show</label>
             <select id="entries" onchange="changeEntries(this.value)">
@@ -52,7 +53,7 @@
                         <td>{{ $candidate->election ? $candidate->election->election_name : 'N/A' }}</td>
                         <td>{{ $candidate->position ? $candidate->position->position_name : 'N/A' }}</td>
                         <td>{{ $candidate->campaign_statement }}</td>
-                        <td>{{ $candidate->partylist }}</td>
+                        <td>{{ $candidate->partylist ? $candidate->partylist->name : 'N/A' }}</td>
                         <td class="actions">
                             <button 
                                 class="edit-btn" 
@@ -63,7 +64,7 @@
                                     'election_id' => $candidate->election_id,
                                     'position_id' => $candidate->position_id,
                                     'campaign_statement' => $candidate->campaign_statement,
-                                    'partylist' => $candidate->partylist,
+                                    'partylist_id' => $candidate->partylist_id,
                                     'picture' => $candidate->picture
                                 ]) }}">
                                 Edit
@@ -111,21 +112,25 @@
                 <h2>Add Candidate</h2>
             </div>
         <div class="modal-body">
-            <form id="addForm" method="POST" action="{{ route('candidates.store') }}">
+            <form id="addForm" method="POST" action="{{ route('candidates.store') }}" enctype="multipart/form-data">
                 @csrf
-                <label for="student_id">Student ID:</label>
-                <input type="text" id="student_id" name="student_id" placeholder="Enter student ID" required>
-
-                <label for="candidate_name">Candidate Name:</label>
-                <input type="text" id="candidate_name" name="student_name" required>
-
                 <label for="election_id">Election:</label>
-                <select name="election_id" required>
+                <select name="election_id" id="election_id" required>
                     <option value="" disabled selected>Select Election</option>
                     @foreach($elections as $election)
-                        <option value="{{ $election->election_id }}">{{ $election->election_name }}</option>
+                        <option value="{{ $election->election_id }}">
+                            {{ $election->election_name }} ({{ $election->election_status }})
+                        </option>
                     @endforeach
                 </select>
+
+                <label for="candidate_name">Candidate Name:</label>
+                <select id="candidate_name" name="student_name" class="select2-candidate" style="width: 100%; height: 45px;" required disabled>
+                    <option value="" disabled selected>First select an election</option>
+                </select>
+
+                <label for="student_id">Student ID:</label>
+                <input type="text" id="student_id" name="student_id" readonly>
 
                 <label for="position_id">Position:</label>
                 <select name="position_id" required>
@@ -139,7 +144,12 @@
                 <textarea name="campaign_statement"></textarea>
 
                 <label for="partylist">Partylist:</label>
-                <input type="text" name="partylist">
+                <select name="partylist_id" required>
+                    <option value="" disabled selected>Select Partylist</option>
+                    @foreach($partylists as $partylist)
+                        <option value="{{ $partylist->partylist_id }}">{{ $partylist->name }}</option>
+                    @endforeach
+                </select>
 
                 <label for="picture">Upload Picture:</label>
                 <input type="file" name="picture" accept="image/*">
@@ -162,28 +172,28 @@
                 @csrf
                 @method('PUT')
 
-                <!-- Student ID -->
-                <label for="edit_student_id">Student ID:</label>
-                <input type="text" id="edit_student_id" name="student_id" placeholder="Enter student ID" required>
-
-                <!-- Candidate Name -->
-                <label for="edit_candidate_name">Candidate Name:</label>
-                <input type="text" id="edit_candidate_name" name="student_name" required>
-
-                <!-- Election -->
                 <label for="edit_election_id">Election:</label>
-                <select id="edit_election_id" name="election_id" required>
+                <select name="election_id" id="edit_election_id" required>
                     <option value="" disabled selected>Select Election</option>
-                    @foreach ($elections as $election)
-                        <option value="{{ $election->election_id }}">{{ $election->election_name }}</option>
+                    @foreach($elections as $election)
+                        <option value="{{ $election->election_id }}">
+                            {{ $election->election_name }} ({{ $election->election_status }})
+                        </option>
                     @endforeach
                 </select>
 
-                <!-- Position -->
+                <label for="edit_candidate_name">Candidate Name:</label>
+                <select id="edit_candidate_name" name="student_name" class="select2-candidate" style="width: 100%; height: 45px;" required>
+                    <option value="" disabled selected>First select an election</option>
+                </select>
+
+                <label for="edit_student_id">Student ID:</label>
+                <input type="text" id="edit_student_id" name="student_id" readonly>
+
                 <label for="edit_position_id">Position:</label>
                 <select id="edit_position_id" name="position_id" required>
                     <option value="" disabled selected>Select Position</option>
-                    @foreach ($positions as $position)
+                    @foreach($positions as $position)
                         <option value="{{ $position->position_id }}">{{ $position->position_name }}</option>
                     @endforeach
                 </select>
@@ -192,7 +202,12 @@
                 <textarea id="edit_campaign_statement" name="campaign_statement"></textarea>
 
                 <label for="edit_partylist">Partylist:</label>
-                <input type="text" id="edit_partylist" name="partylist">
+                <select id="edit_partylist" name="partylist_id" required>
+                    <option value="" disabled selected>Select Partylist</option>
+                    @foreach($partylists as $partylist)
+                        <option value="{{ $partylist->partylist_id }}">{{ $partylist->name }}</option>
+                    @endforeach
+                </select>
 
                 <label for="edit_picture">Upload Picture:</label>
                 <input type="file" id="edit_picture" name="picture" accept="image/*">
@@ -205,12 +220,33 @@
     </div>
 </div>
 
+<!-- Add Partylist Modal -->
+<div id="addPartylistModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" id="closeAddPartylistModal">&times;</span>
+            <h2>Add Partylist</h2>
+        </div>
+        <div class="modal-body">
+            <form id="addPartylistForm">
+                @csrf
+                <label for="partylist_name">Partylist Name:</label>
+                <input type="text" id="partylist_name" name="name" required>
+                <button type="submit">Add Partylist</button>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection
 
-@section('scripts')
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@section('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+@endsection
 
+@section('scripts')
+<!-- Make sure jQuery is loaded first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ asset('js/candidate.js') }}"></script>
 @endsection

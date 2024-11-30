@@ -32,31 +32,26 @@
             </div>
         @else
             @foreach($positions as $positionName => $candidates)
-                <table class="position-table">
-                    <thead>
-                        <tr>
-                            <th colspan="3">{{ $positionName }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="position-section">
+                    <h2>{{ $positionName }}</h2>
+                    <div class="candidates-grid">
                         @foreach($candidates as $candidate)
-                            <tr>
-                                <td class="candidate-image">
-                                    <img src="{{ asset('images/candidates/' . $candidate->picture) }}" width="100">
-                                </td>
-                                <td class="candidate-details">
-                                    <h3>{{ $candidate->student_name }}</h3>
-                                    <p><i>{{ $candidate->campaign_statement }}</i></p>
-                                    <p><strong>Partylist:</strong> {{ $candidate->partylist }}</p>
-                                </td>
-                                <td class="candidate-votes">
-                                    <p class="votes-count">{{ $candidate->total_votes }}</p>
-                                    <p class="votes-label">Total Votes</p>
-                                </td>
-                            </tr>
+                            <div class="candidate-card">
+                                @if($candidate->picture)
+                                    <img src="{{ asset('images/candidates/' . $candidate->picture) }}" alt="{{ $candidate->student_name }}">
+                                @else
+                                    <img src="{{ asset('images/default-avatar.png') }}" alt="Default Avatar">
+                                @endif
+                                <h3>{{ $candidate->student_name }}</h3>
+                                <p class="partylist">{{ $candidate->partylist_name }}</p>
+                                <p class="votes">Total Votes: {{ $candidate->total_votes }}</p>
+                                @if($candidate->campaign_statement)
+                                    <p class="statement">{{ $candidate->campaign_statement }}</p>
+                                @endif
+                            </div>
                         @endforeach
-                    </tbody>
-                </table>
+                    </div>
+                </div>
             @endforeach
         @endif
     </div>

@@ -299,12 +299,11 @@ footer p {
 
 /* Upcoming Elections Styles */
 .upcoming-stats {
-    margin-right: 20px;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
-    justify-content: center; /* Center items when fewer are present */
-    max-width: 1200px; /* Optional: limit the total width */
-    flex-wrap: wrap; /* Allow wrapping if necessary */
+    margin: 20px;
+    padding: 10px;
 }
 
 #bottom-header {
@@ -312,38 +311,41 @@ footer p {
 }
 
 .stat-box-upcoming {
-    flex: 1 1 calc(25% - 20px); /* Default for four per row */
-    max-width: 300px; /* Ensure boxes don't grow too large */
-    min-width: 250px; /* Maintain a minimum size */
-    background-color: #ffffff; /* White background */
-    border: 2px solid #6a95eb; /* Blue border */
-    border-radius: 10px; /* Rounded corners */
-    color: #000; /* Ensure text is visible */
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    box-sizing: border-box;
+    background: white;
+    border: 1px solid #003399;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .stat-box-upcoming:hover {
-    background-color: #d0e4ff; /* Lighter blue on hover */
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .stat-item-upcoming {
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
+
 .stat-item-upcoming h3 {
-    color: #003399;
-    font-size: 1.4rem;
-    margin-bottom: 10px;
-    text-transform: uppercase;
+    background-color: #003399;
+    color: white;
+    margin: 0;
+    padding: 15px;
+    font-size: 1.2em;
+    text-align: center;
 }
 
 .stat-item-upcoming p {
-    color: #666464;
-    font-size: 1rem;
-    font-weight: bold;
-    margin-bottom: 15px;
+    padding: 15px;
+    margin: 0;
+    text-align: center;
+    color: #333;
+    font-size: 1em;
+    background-color: #f8f9fa;
+    border-top: 1px solid #eee;
 }
 
 /* Your Voting History Table Styles */
@@ -989,5 +991,140 @@ footer p {
 
         margin-left: 0;
     }
+}
+
+/* Profile Styles */
+.profile-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profile-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-info h2 {
+    color: #003399;
+    margin: 0 0 10px 0;
+}
+
+.profile-info p {
+    color: #666;
+    margin: 0;
+}
+
+.profile-form .form-group {
+    margin-bottom: 20px;
+}
+
+.profile-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: bold;
+}
+
+.profile-form input[type="email"],
+.profile-form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.profile-form input[type="file"] {
+    padding: 10px 0;
+}
+
+.password-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.password-section h3 {
+    color: #003399;
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    margin-top: 30px;
+    text-align: right;
+}
+
+.save-button {
+    background-color: #003399;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.save-button:hover {
+    background-color: #002277;
+}
+
+.error {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+    display: block;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-form {
+        padding: 0;
+    }
+}
+
+.profile-info {
+    margin-bottom: 20px;
+}
+
+.student-id {
+    color: #666;
+    font-size: 1.1em;
+}
+
+.profile-info-spacing {
+    height: 30px;
+}
+
+.profile-form .form-group:first-of-type {
+    margin-top: 20px;
 }
 

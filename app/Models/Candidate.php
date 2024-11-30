@@ -18,7 +18,7 @@ class Candidate extends Model
         'student_name',
         'campaign_statement',
         'picture',
-        'partylist',
+        'partylist_id',
         'election_id',
         'position_id',
         'dateRegistered',
@@ -41,6 +41,11 @@ class Candidate extends Model
     public function position()
     {
         return $this->belongsTo(Position::class, 'position_id', 'position_id');
+    }
+    
+    public function partylist()
+    {
+        return $this->belongsTo(Partylist::class, 'partylist_id', 'partylist_id');
     }
     
 }

@@ -10,65 +10,68 @@ class StudentHomeController extends Controller
 {
     public function index()
     {
-        $student = auth('student')->user(); // Get the authenticated student
-        
-        // Fetch eligible ongoing elections
+        $student = auth('student')->user();
+
+        // Get ongoing elections that the student is eligible for and hasn't voted in yet
         $ongoingElections = Election::where('election_status', 'Ongoing')
             ->where(function ($query) use ($student) {
                 // General elections
                 $query->where('election_type', 'General')
                     ->orWhere(function ($query) use ($student) {
-                        // Faculty elections
+                        // Faculty elections matching student's faculty
                         $query->where('election_type', 'Faculty')
                             ->where('restriction', $student->faculty);
                     })
                     ->orWhere(function ($query) use ($student) {
-                        // Program elections
+                        // Program elections matching student's program
                         $query->where('election_type', 'Program')
                             ->where('restriction', $student->program);
                     });
             })
             ->whereDoesntHave('votes', function ($query) use ($student) {
-                // Exclude elections already voted in
+                // Exclude elections where the student has already voted
                 $query->where('student_id', $student->student_id);
             })
-            ->orderBy('start_date', 'asc')
-            ->take(4) // Limit to the first 4
+            ->orderBy('end_date', 'asc')
             ->get();
-    
-        $upcomingElections = Election::where('election_status', 'Upcoming')
-        ->where(function ($query) use ($student) {
-            // General elections
-            $query->where('election_type', 'General')
-                ->orWhere(function ($query) use ($student) {
-                    // Faculty elections
-                    $query->where('election_type', 'Faculty')
-                        ->where('restriction', $student->faculty);
-                })
-                ->orWhere(function ($query) use ($student) {
-                    // Program elections
-                    $query->where('election_type', 'Program')
-                        ->where('restriction', $student->program);
-                });
-        })
-        ->orderBy('start_date', 'asc')
-        ->take(4) // Limit to 3
-        ->get();
 
-        // Fetch recent voting history
+        // Get upcoming elections that the student will be eligible for
+        $upcomingElections = Election::where('election_status', 'Upcoming')
+            ->where(function ($query) use ($student) {
+                // General elections
+                $query->where('election_type', 'General')
+                    ->orWhere(function ($query) use ($student) {
+                        // Faculty elections matching student's faculty
+                        $query->where('election_type', 'Faculty')
+                            ->where('restriction', $student->faculty);
+                    })
+                    ->orWhere(function ($query) use ($student) {
+                        // Program elections matching student's program
+                        $query->where('election_type', 'Program')
+                            ->where('restriction', $student->program);
+                    });
+            })
+            ->orderBy('start_date', 'asc')
+            ->get();
+
+        // Get voting history with limit 10
         $votingHistory = DB::table('votes')
             ->join('elections', 'votes.election_id', '=', 'elections.election_id')
-            ->select(
-                'elections.election_id',
-                'elections.election_name',
-                DB::raw('MAX(votes.vote_date) as vote_date') // Most recent vote date per election
-            )
+            ->join('candidates', 'votes.candidate_id', '=', 'candidates.candidate_id')
+            ->join('positions', 'candidates.position_id', '=', 'positions.position_id')
+            ->join('partylists', 'candidates.partylist_id', '=', 'partylists.partylist_id')
             ->where('votes.student_id', $student->student_id)
-            ->groupBy('elections.election_id', 'elections.election_name')
-            ->orderBy('vote_date', 'desc')
-            ->take(5) // Limit to the 5 most recent votes
+            ->select(
+                'elections.election_name',
+                'votes.vote_date',
+                'candidates.student_name as candidate_name',
+                'partylists.name as partylist',
+                'positions.position_name'
+            )
+            ->orderBy('votes.vote_date', 'desc')
+            ->limit(10)
             ->get();
-    
+
         return view('student-home', compact('ongoingElections', 'upcomingElections', 'votingHistory'));
     }
     

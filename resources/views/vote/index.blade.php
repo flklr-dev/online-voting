@@ -41,7 +41,7 @@
                                     <td class="candidate-details">
                                         <h3>{{ $candidate->student_name }}</h3>
                                         <p><i>{{ $candidate->campaign_statement }}</i></p>
-                                        <p><strong>Partylist:</strong> {{ $candidate->partylist }}</p>
+                                        <p><strong>Partylist:</strong> {{ $candidate->partylist->name }}</p>
                                     </td>
                                     <td class="candidate-vote">
                                         <label>

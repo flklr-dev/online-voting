@@ -6,9 +6,11 @@ use App\Models\Candidate;
 use App\Models\Election;
 use App\Models\Position;
 use App\Models\Student;
+use App\Models\Partylist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class CandidateController extends Controller
 {
@@ -18,7 +20,7 @@ class CandidateController extends Controller
         $search = $request->input('search');
     
         // Modify the search to include election_name and position_name
-        $candidates = Candidate::with(['election', 'position', 'student'])
+        $candidates = Candidate::with(['election', 'position', 'student', 'partylist'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('election', function($q) use ($search) {
                         $q->where('election_name', 'like', "%$search%");
@@ -31,10 +33,13 @@ class CandidateController extends Controller
             })
             ->paginate($limit);
     
-        $elections = Election::all();
+        $elections = Election::whereIn('election_status', ['Upcoming', 'Ongoing'])
+            ->orderBy('start_date', 'asc')
+            ->get();
         $positions = Position::all();
+        $partylists = Partylist::all();
     
-        return view('candidates.index', compact('candidates', 'elections', 'positions'));
+        return view('candidates.index', compact('candidates', 'elections', 'positions', 'partylists'));
     }
 
     public function store(Request $request)
@@ -46,7 +51,7 @@ class CandidateController extends Controller
                 'position_id' => 'required|exists:positions,position_id',
                 'student_name' => 'required|string|max:255',
                 'campaign_statement' => 'nullable|string',
-                'partylist' => 'nullable|string',
+                'partylist_id' => 'required|exists:partylists,partylist_id',
                 'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
     
@@ -59,11 +64,7 @@ class CandidateController extends Controller
             Candidate::create($validatedData);
     
             return response()->json(['success' => true, 'message' => 'Candidate added successfully!']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Log validation errors
-            return response()->json(['success' => false, 'message' => $e->errors()], 400);
         } catch (\Exception $e) {
-            // Log any other errors
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -79,7 +80,7 @@ class CandidateController extends Controller
                 'position_id' => 'required|exists:positions,position_id',
                 'student_name' => 'required|string|max:255',
                 'campaign_statement' => 'nullable|string',
-                'partylist' => 'nullable|string|max:100',
+                'partylist_id' => 'required|exists:partylists,partylist_id',
                 'picture' => 'nullable|image|max:2048',
             ]);
 
@@ -109,5 +110,34 @@ class CandidateController extends Controller
         $candidate->delete();
 
         return response()->json(['success' => true, 'message' => 'Candidate deleted successfully!']);
+    }
+
+    public function getEligibleStudents($election_id)
+    {
+        try {
+            $election = Election::findOrFail($election_id);
+            
+            // Query to get eligible students based on election type and restriction
+            $query = Student::where('status', 'Active')
+                ->whereNotExists(function ($query) use ($election_id) {
+                    $query->select(DB::raw(1))
+                        ->from('candidates')
+                        ->whereRaw('candidates.student_id = students.student_id')
+                        ->where('election_id', $election_id);
+                });
+
+            // Add restrictions based on election type
+            if ($election->election_type === 'Faculty') {
+                $query->where('faculty', $election->restriction);
+            } elseif ($election->election_type === 'Program') {
+                $query->where('program', $election->restriction);
+            }
+
+            $students = $query->get(['student_id', 'fullname']);
+
+            return response()->json(['success' => true, 'students' => $students]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }

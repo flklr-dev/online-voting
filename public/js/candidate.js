@@ -19,6 +19,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.target === addCandidateModal) {
             addCandidateModal.style.display = 'none';
         }
+        if (event.target === addPartylistModal) {
+            addPartylistModal.style.display = 'none';
+        }
+        if (event.target === editCandidateModal) {
+            editCandidateModal.style.display = 'none';
+        }
     };
 
     // Handle form submission for adding candidate
@@ -62,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('edit_election_id').value = candidate.election_id;
             document.getElementById('edit_position_id').value = candidate.position_id;
             document.getElementById('edit_campaign_statement').value = candidate.campaign_statement;
-            document.getElementById('edit_partylist').value = candidate.partylist;
+            document.getElementById('edit_partylist').value = candidate.partylist_id;
 
             // Show image preview if picture exists
             const imgPreview = document.getElementById('edit_picture_preview');
@@ -176,4 +182,200 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     
+    // Add Partylist Modal
+    const addPartylistModal = document.getElementById('addPartylistModal');
+    const openAddPartylistModal = document.getElementById('openAddPartylistModal');
+    const closeAddPartylistModal = document.getElementById('closeAddPartylistModal');
+
+    openAddPartylistModal.onclick = () => {
+        addPartylistModal.style.display = 'block';
+    };
+
+    closeAddPartylistModal.onclick = () => {
+        addPartylistModal.style.display = 'none';
+    };
+
+    // Add form submission handler for partylist
+    document.getElementById("addPartylistForm").onsubmit = function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('/partylists', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                addPartylistModal.style.display = 'none';
+                this.reset();
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    };
+
+    // Initialize Select2
+    $('.select2-candidate').select2({
+        placeholder: 'Select Candidate',
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Election change handler
+    $('#election_id').on('change', function() {
+        const electionId = this.value;
+        const candidateSelect = $('.select2-candidate');
+        
+        if (electionId) {
+            candidateSelect.prop('disabled', false);
+            
+            // Fetch eligible students
+            fetch(`/get-eligible-students/${electionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Clear and populate Select2
+                        candidateSelect.empty().append('<option value="" disabled selected>Select Candidate</option>');
+                        
+                        data.students.forEach(student => {
+                            const option = new Option(student.fullname, student.fullname, false, false);
+                            candidateSelect.append(option);
+                        });
+                        
+                        // Store students data for ID lookup
+                        window.eligibleStudents = data.students;
+                        
+                        // Trigger Select2 to update
+                        candidateSelect.trigger('change');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            candidateSelect.prop('disabled', true)
+                .empty()
+                .append('<option value="" disabled selected>First select an election</option>')
+                .trigger('change');
+        }
+    });
+
+    // Handle candidate selection
+    $('.select2-candidate').on('select2:select', function(e) {
+        const selectedName = e.params.data.text;
+        const selectedStudent = window.eligibleStudents.find(student => 
+            student.fullname === selectedName
+        );
+        if (selectedStudent) {
+            $('#student_id').val(selectedStudent.student_id);
+        }
+    });
+
+    $(document).ready(function() {
+        // Initialize Select2 for both add and edit forms
+        $('.select2-candidate').select2({
+            placeholder: 'Search and select candidate',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Edit button click handler
+        $('.edit-btn').on('click', function() {
+            const candidateData = JSON.parse($(this).attr('data-candidate'));
+            const editModal = $('#editCandidateModal');
+            
+            // Set the form action
+            $('#editForm').attr('action', `/candidates/${candidateData.candidate_id}`);
+            
+            // Set initial values
+            $('#edit_election_id').val(candidateData.election_id);
+            $('#edit_student_id').val(candidateData.student_id);
+            $('#edit_position_id').val(candidateData.position_id);
+            $('#edit_campaign_statement').val(candidateData.campaign_statement);
+            $('#edit_partylist').val(candidateData.partylist_id);
+
+            // Handle candidate name Select2
+            const candidateSelect = $('#edit_candidate_name');
+            fetch(`/get-eligible-students/${candidateData.election_id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        candidateSelect.empty().append('<option value="" disabled>Select Candidate</option>');
+                        
+                        data.students.forEach(student => {
+                            const option = new Option(student.fullname, student.fullname, 
+                                student.fullname === candidateData.student_name,
+                                student.fullname === candidateData.student_name);
+                            candidateSelect.append(option);
+                        });
+                        
+                        window.eligibleStudents = data.students;
+                        candidateSelect.trigger('change');
+                    }
+                });
+
+            // Show current picture if exists
+            if (candidateData.picture) {
+                $('#edit_picture_preview').attr('src', `/images/candidates/${candidateData.picture}`).show();
+            } else {
+                $('#edit_picture_preview').hide();
+            }
+
+            editModal.show();
+        });
+
+        // Election change handler for edit form
+        $('#edit_election_id').on('change', function() {
+            const electionId = this.value;
+            const candidateSelect = $('#edit_candidate_name');
+            
+            if (electionId) {
+                candidateSelect.prop('disabled', false);
+                
+                fetch(`/get-eligible-students/${electionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            candidateSelect.empty().append('<option value="" disabled selected>Select Candidate</option>');
+                            
+                            data.students.forEach(student => {
+                                const option = new Option(student.fullname, student.fullname, false, false);
+                                candidateSelect.append(option);
+                            });
+                            
+                            window.eligibleStudents = data.students;
+                            candidateSelect.trigger('change');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                candidateSelect.prop('disabled', true)
+                    .empty()
+                    .append('<option value="" disabled selected>First select an election</option>')
+                    .trigger('change');
+            }
+        });
+
+        // Handle candidate selection in edit form
+        $('#edit_candidate_name').on('select2:select', function(e) {
+            const selectedName = e.params.data.text;
+            const selectedStudent = window.eligibleStudents.find(student => 
+                student.fullname === selectedName
+            );
+            if (selectedStudent) {
+                $('#edit_student_id').val(selectedStudent.student_id);
+            }
+        });
+
+        // Keep your existing code...
+    });
 });
