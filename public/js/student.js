@@ -63,10 +63,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Add Student form submission
     document.getElementById("addStudentForm").onsubmit = function (e) {
         e.preventDefault();
         const formData = new FormData(this);
-    
+
         fetch('/students', {
             method: 'POST',
             headers: {
@@ -78,20 +79,34 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Student added successfully!");
-                document.getElementById('addStudentModal').style.display = "none";
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Student added successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    document.getElementById('addStudentModal').style.display = "none";
+                    location.reload();
+                });
             } else {
-                alert("Error adding student: " + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error adding student'
+                });
             }
         })
         .catch(error => {
-            alert("An error occurred. Please try again.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred. Please try again.'
+            });
             console.error('Error:', error);
         });
     };
-    
-    
+
     const editStudentModal = document.getElementById('editStudentModal');
     // Handle Edit Student
     document.querySelectorAll('.edit-btn').forEach(button => {
@@ -189,38 +204,52 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     
+        // Update Student form submission
         document.getElementById('editStudentForm').onsubmit = function (e) {
             e.preventDefault();
-        
-            const formData = new FormData(this); // Collect the form data
-        
-            const originalStudentId = this.getAttribute('data-student-id'); // Get the original student ID
-        
+            
+            const formData = new FormData(this);
+            formData.append('_method', 'PUT'); // Add PUT method override
+            
+            const originalStudentId = this.getAttribute('data-student-id');
+
             fetch(`/students/${originalStudentId}`, {
-                method: 'POST',  // Use PUT or PATCH here based on your route definition
+                method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',  // Ensure JSON response
+                    'Accept': 'application/json',
                 },
-                body: formData,
+                body: formData
             })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(JSON.stringify(data)); // Handle validation errors
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    alert('Student updated successfully!');
-                    document.getElementById('editStudentModal').style.display = 'none';
-                    location.reload();
-                })
-                .catch(error => {
-                    console.error('Error:', error.message);
-                    alert('Error: ' + error.message);
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Student updated successfully!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        document.getElementById('editStudentModal').style.display = 'none';
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message || 'Error updating student'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while updating the student.'
                 });
+                console.error('Error:', error);
+            });
         };
         
         
@@ -229,31 +258,55 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.onclick = function () {
                 const studentId = button.getAttribute('data-id');
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content'); // CSRF token
-    
-                // Show a confirmation prompt before deleting
-                if (confirm('Are you sure you want to delete this student?')) {
-                    fetch(`/students/${studentId}`, { // Ensure this points to the correct route
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken // Include CSRF token
-                        }
-                    })
-                    .then(response => response.json()) // Expecting JSON response
-                    .then(data => {
-                        if (data.success) {
-                            alert("Student deleted successfully!"); // Success message
-                            location.reload(); // Refresh to update student list
-                        } else {
-                            alert("Error deleting student: " + data.message); // Show error message
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert("An error occurred while deleting the student. Please try again.");
-                    });
-                }
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You want to delete this student?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/students/${studentId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: 'Student has been deleted.',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: data.message || 'Error deleting student'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'An error occurred while deleting the student.'
+                            });
+                            console.error('Error:', error);
+                        });
+                    }
+                });
             };
         });
     

@@ -155,7 +155,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Validate restriction for Faculty and Program
         if ((electionType === 'Faculty' || electionType === 'Program') && !restriction) {
-            alert('Please select a restriction for Faculty or Program election types.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please select a restriction for Faculty or Program election types.'
+            });
             return;
         }
 
@@ -163,10 +167,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const endDate = endDatePicker.input.value;
 
         if (!startDate || !endDate) {
-            alert('Please select both start and end dates.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please select both start and end dates.'
+            });
             return;
         }
-
 
         const formData = new FormData(this);
         formData.set('start_date', startDate);
@@ -182,16 +189,31 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Election added successfully!");
-                addElectionModal.style.display = "none";
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Election added successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    addElectionModal.style.display = "none";
+                    location.reload();
+                });
             } else {
-                alert("Error adding election: " + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error adding election'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert("An error occurred. Please try again.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred. Please try again.'
+            });
         });
     };
 
@@ -299,12 +321,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // Trigger the restriction dropdown to load properly on page load.
     document.getElementById('election_type').dispatchEvent(new Event('change'));
 
+    // Update Election Form Submission
     document.getElementById("editElectionForm").onsubmit = function (e) {
         e.preventDefault();
 
         const electionId = this.getAttribute('data-election-id');
         const formData = new FormData(this);
-        formData.set('election_status', document.getElementById('edit_election_status').value);
+        formData.append('_method', 'PUT');
 
         fetch(`/elections/${electionId}`, {
             method: 'POST',
@@ -313,20 +336,35 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             body: formData
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Election updated successfully!");
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Election updated successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
                     editElectionModal.style.display = 'none';
                     location.reload();
-                } else {
-                    alert("Error updating election: " + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("An error occurred. Please try again.");
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error updating election'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while updating the election.'
             });
+        });
     };
     
     document.querySelectorAll('.delete-btn').forEach(button => {
@@ -334,28 +372,53 @@ document.addEventListener("DOMContentLoaded", function () {
             const electionId = button.getAttribute('data-election-id');
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
-            if (confirm('Are you sure you want to delete this election?')) {
-                fetch(`/elections/${electionId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Election deleted successfully!");
-                        location.reload();
-                    } else {
-                        alert("Error deleting election: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("An error occurred while deleting the election.");
-                });
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You want to delete this election?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/elections/${electionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Election has been deleted.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Error deleting election'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the election.'
+                        });
+                    });
+                }
+            });
         };
     });     
 
@@ -422,28 +485,53 @@ document.addEventListener("DOMContentLoaded", function () {
                 const electionId = button.getAttribute('data-election-id');
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                if (confirm('Are you sure you want to delete this election?')) {
-                    fetch(`/elections/${electionId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Content-Type': 'application/json',
-                        },
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert("Election deleted successfully!");
-                            location.reload();
-                        } else {
-                            alert("Error deleting election: " + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert("An error occurred while deleting the election.");
-                    });
-                }
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You want to delete this election?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/elections/${electionId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: 'Election has been deleted.',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: data.message || 'Error deleting election'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'An error occurred while deleting the election.'
+                            });
+                        });
+                    }
+                });
             };
         });
     }

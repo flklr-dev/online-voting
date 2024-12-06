@@ -43,34 +43,48 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Candidate added successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
             } else {
-                alert('Error: ' + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred. Please try again.'
+            });
         });
     };
 
     // Edit Candidate Modal logic
-    const editCandidateModal = document.getElementById('editCandidateModal');
-        
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.onclick = function () {
             const candidate = JSON.parse(button.getAttribute('data-candidate'));
-
-            // Populate form fields with candidate data
-            document.getElementById('edit_student_id').value = candidate.student_id;
-            document.getElementById('edit_candidate_name').value = candidate.student_name;
+            const editForm = document.getElementById('editForm');
+            
+            // Set form fields
             document.getElementById('edit_election_id').value = candidate.election_id;
+            document.getElementById('edit_student_name').value = candidate.student_name;
+            document.getElementById('edit_student_id').value = candidate.student_id;
             document.getElementById('edit_position_id').value = candidate.position_id;
             document.getElementById('edit_campaign_statement').value = candidate.campaign_statement;
             document.getElementById('edit_partylist').value = candidate.partylist_id;
 
-            // Show image preview if picture exists
+            // Show image preview
             const imgPreview = document.getElementById('edit_picture_preview');
             if (candidate.picture) {
                 imgPreview.src = `/images/candidates/${candidate.picture}`;
@@ -79,11 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 imgPreview.style.display = 'none';
             }
 
-            // Set the candidate ID on the form to use in the update request
-            document.getElementById('editForm').setAttribute('data-candidate-id', candidate.candidate_id);
-
-            // Open the edit modal
-            editCandidateModal.style.display = 'block';
+            // Set the form action with the correct candidate ID
+            editForm.action = `/candidates/${candidate.candidate_id}`;
+            document.getElementById('editCandidateModal').style.display = 'block';
         };
     });
     
@@ -92,65 +104,109 @@ document.addEventListener("DOMContentLoaded", function () {
     const closeEditCandidateModal = document.getElementById('closeEditCandidateModal');
     closeEditCandidateModal.onclick = () => editCandidateModal.style.display = 'none';
 
-    // Handle form submission for editing candidate
+    // Update Candidate Form Submission
     document.getElementById("editForm").onsubmit = function (e) {
         e.preventDefault();
-
-        const candidateId = this.getAttribute('data-candidate-id');  // Get candidate ID from the form
-
         const formData = new FormData(this);
+        formData.append('_method', 'PUT');
+
+        // Get the candidate ID from the form action
+        const candidateId = this.action.split('/').pop();
 
         fetch(`/candidates/${candidateId}`, {
-            method: 'POST',  // Should be 'POST' if you're following Laravel's form handling with @method('PUT')
+            method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             },
             body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
-                editCandidateModal.style.display = 'none';
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Candidate updated successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    document.getElementById('editCandidateModal').style.display = 'none';
+                    location.reload();
+                });
             } else {
-                alert('Error: ' + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error updating candidate'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while updating the candidate.'
+            });
         });
     };
 
     // Handle delete candidate functionality
     document.querySelectorAll('.delete-btn').forEach(button => {
-        button.onclick = function () {
-            const candidateId = button.getAttribute('data-id');
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        button.onclick = function() {
+            const candidateId = this.getAttribute('data-id');
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You want to delete this candidate?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('_method', 'DELETE');
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
-            if (confirm('Are you sure you want to delete this candidate?')) {
-                fetch(`/candidates/${candidateId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting the candidate.');
-                });
-            }
+                    fetch(`/candidates/${candidateId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Candidate has been deleted.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Error deleting candidate'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the candidate.'
+                        });
+                    });
+                }
+            });
         };
     });
 
@@ -211,19 +267,119 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
-                addPartylistModal.style.display = 'none';
+                // Add new partylist to the table
+                const partylistsContainer = document.getElementById('partylistsContainer');
+                const newRow = document.createElement('tr');
+                newRow.className = 'partylist-item';
+                newRow.innerHTML = `
+                    <td>${data.partylist.name}</td>
+                    <td>
+                        <button class="delete-partylist-btn" data-id="${data.partylist.partylist_id}">Delete</button>
+                    </td>
+                `;
+                partylistsContainer.appendChild(newRow);
+                
+                // Clear the input
                 this.reset();
-                location.reload();
+                
+                // Add delete event listener to new button
+                attachDeletePartylistListener(newRow.querySelector('.delete-partylist-btn'));
+                
+                // Update the select options in the candidate forms
+                updatePartylistSelects(data.partylist);
+
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Partylist added successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             } else {
-                alert('Error: ' + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred. Please try again.'
+            });
         });
     };
+
+    // Function to attach delete event listener
+    function attachDeletePartylistListener(button) {
+        button.onclick = function() {
+            const partylistId = this.getAttribute('data-id');
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You want to delete this partylist?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/partylists/${partylistId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.closest('.partylist-item').remove();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Partylist has been deleted.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the partylist.'
+                        });
+                    });
+                }
+            });
+        };
+    }
+
+    // Attach delete listeners to existing buttons
+    document.querySelectorAll('.delete-partylist-btn').forEach(button => {
+        attachDeletePartylistListener(button);
+    });
+
+    // Function to update partylist select options
+    function updatePartylistSelects(newPartylist) {
+        const selects = document.querySelectorAll('select[name="partylist_id"]');
+        selects.forEach(select => {
+            const option = new Option(newPartylist.name, newPartylist.partylist_id);
+            select.add(option);
+        });
+    }
 
     // Initialize Select2
     $('.select2-candidate').select2({
@@ -374,6 +530,26 @@ document.addEventListener("DOMContentLoaded", function () {
             if (selectedStudent) {
                 $('#edit_student_id').val(selectedStudent.student_id);
             }
+        });
+
+        // Campaign Statement View Button
+        document.querySelectorAll('.view-campaign-btn').forEach(button => {
+            button.onclick = function() {
+                const campaignStatement = this.getAttribute('data-campaign');
+                
+                Swal.fire({
+                    title: 'Campaign Statement',
+                    text: campaignStatement || 'No campaign statement available.',
+                    icon: 'info',
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        container: 'campaign-statement-modal',
+                        content: 'campaign-statement-content'
+                    },
+                    width: '50em', // Makes the modal wider
+                    showCloseButton: true,
+                });
+            };
         });
 
         // Keep your existing code...

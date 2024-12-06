@@ -11,7 +11,7 @@
 <div class="container">
     <div class="top-controls">
         <button id="openAddCandidateModal" class="btn-add">Add Candidate</button>
-        <button id="openAddPartylistModal" class="btn-add">Add Partylist</button>
+        <button id="openAddPartylistModal" class="btn-add">Manage Partylist</button>
         <div class="dropdown-show-entries">
             <label for="entries">Show</label>
             <select id="entries" onchange="changeEntries(this.value)">
@@ -52,7 +52,12 @@
                         <!-- Access the election and position names through the relationships -->
                         <td>{{ $candidate->election ? $candidate->election->election_name : 'N/A' }}</td>
                         <td>{{ $candidate->position ? $candidate->position->position_name : 'N/A' }}</td>
-                        <td>{{ $candidate->campaign_statement }}</td>
+                        <td>
+                            <button class="view-campaign-btn" 
+                                    data-campaign="{{ $candidate->campaign_statement }}">
+                                View
+                            </button>
+                        </td>
                         <td>{{ $candidate->partylist ? $candidate->partylist->name : 'N/A' }}</td>
                         <td class="actions">
                             <button 
@@ -182,10 +187,8 @@
                     @endforeach
                 </select>
 
-                <label for="edit_candidate_name">Candidate Name:</label>
-                <select id="edit_candidate_name" name="student_name" class="select2-candidate" style="width: 100%; height: 45px;" required>
-                    <option value="" disabled selected>First select an election</option>
-                </select>
+                <label for="edit_student_name">Candidate Name:</label>
+                <input type="text" id="edit_student_name" name="student_name" required>
 
                 <label for="edit_student_id">Student ID:</label>
                 <input type="text" id="edit_student_id" name="student_id" readonly>
@@ -225,15 +228,38 @@
     <div class="modal-content">
         <div class="modal-header">
             <span class="close" id="closeAddPartylistModal">&times;</span>
-            <h2>Add Partylist</h2>
+            <h2>Manage Partylists</h2>
         </div>
         <div class="modal-body">
             <form id="addPartylistForm">
                 @csrf
-                <label for="partylist_name">Partylist Name:</label>
-                <input type="text" id="partylist_name" name="name" required>
-                <button type="submit">Add Partylist</button>
+                <div class="partylist-form">
+                    <label for="partylist_name">Add New Partylist:</label>
+                    <div class="partylist-input-group">
+                        <input type="text" id="partylist_name" name="name" required placeholder="Enter partylist name">
+                        <button type="submit">Add</button>
+                    </div>
+                </div>
             </form>
+
+            <table class="table-common">
+                <thead>
+                    <tr>
+                        <th>Partylist Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="partylistsContainer">
+                    @foreach($partylists as $partylist)
+                        <tr class="partylist-item">
+                            <td>{{ $partylist->name }}</td>
+                            <td>
+                                <button class="delete-partylist-btn" data-id="{{ $partylist->partylist_id }}">Delete</button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -248,5 +274,6 @@
 <!-- Make sure jQuery is loaded first -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('js/candidate.js') }}"></script>
 @endsection

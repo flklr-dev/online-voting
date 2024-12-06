@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Validation\ValidationException;
 
 class ElectionController extends Controller
 {
@@ -95,26 +96,38 @@ class ElectionController extends Controller
     }
     public function update(Request $request, $id)
     {
-        $election = Election::where('election_id', $id)->firstOrFail();
-    
-        $validatedData = $request->validate([
-            'election_name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'election_type' => 'required|string|in:Faculty,Program,General',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after:start_date',
-            'restriction' => 'nullable|string',
-            'election_status' => 'required|string|in:Upcoming,Ongoing,Completed',
-        ]);
+        try {
+            $election = Election::findOrFail($id);
 
-        if ($validatedData['election_type'] === 'General') {
-            $validatedData['restriction'] = 'None';
+            $validatedData = $request->validate([
+                'election_name' => 'required|string',
+                'description' => 'required|string',
+                'election_type' => 'required|in:General,Faculty,Program',
+                'restriction' => 'required_if:election_type,Faculty,Program',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after:start_date',
+                'election_status' => 'required|string'
+            ]);
+
+            $election->update($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Election updated successfully!',
+                'election' => $election
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update election.'
+            ], 500);
         }
-    
-        // Preserve the election_id and apply other validated data
-        $election->update($validatedData);
-    
-        return response()->json(['success' => true, 'message' => 'Election updated successfully!']);
     }
     
 

@@ -21,27 +21,19 @@ class ProfileController extends Controller
         $student = auth('student')->user();
 
         $request->validate([
-            'faculty' => 'required|string',
-            'program' => 'required|string',
-            'current_password' => 'required_with:new_password',
-            'new_password' => 'nullable|min:8|confirmed'
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed'
         ]);
 
-        // Update faculty and program
-        $student->faculty = $request->faculty;
-        $student->program = $request->program;
-
         // Handle password change
-        if ($request->filled('current_password')) {
-            if (!Hash::check($request->current_password, $student->password)) {
-                return back()->withErrors(['current_password' => 'The current password is incorrect.']);
-            }
-            $student->password = Hash::make($request->new_password);
+        if (!Hash::check($request->current_password, $student->password)) {
+            return back()->withErrors(['current_password' => 'The current password is incorrect.']);
         }
-
+        
+        $student->password = Hash::make($request->new_password);
         $student->save();
 
-        return redirect()->route('profile.index')->with('success', 'Profile updated successfully!');
+        return redirect()->route('profile.index')->with('success', 'Password updated successfully!');
     }
 
     public function getPrograms(Request $request)

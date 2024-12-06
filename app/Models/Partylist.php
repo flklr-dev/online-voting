@@ -14,4 +14,9 @@ class Partylist extends Model
     public $timestamps = false;
 
     protected $fillable = ['name'];
+
+    public function candidates()
+    {
+        return $this->hasMany(Candidate::class, 'partylist_id');
+    }
 } 

@@ -1,70 +1,91 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const voteForm = document.getElementById('voteForm');
-    const maxVotes = {}; // Store max votes per position
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('voteForm');
+    const checkboxes = document.querySelectorAll('.candidate-checkbox');
 
-    // Initialize max votes from the DOM
-    document.querySelectorAll('.position-table').forEach(table => {
-        const positionId = table.querySelector('.candidate-checkbox').dataset.positionId;
-        const maxVote = parseInt(
-            table.querySelector('thead tr:nth-child(2) th').textContent.match(/\d+/)[0]
-        );
-        maxVotes[positionId] = maxVote;
-    });
+    // Handle checkbox limits per position
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const positionId = this.getAttribute('data-position-id');
+            const maxVotes = parseInt(this.closest('table').querySelector('thead tr:nth-child(2) th').textContent.match(/\d+/)[0]);
+            const checkedBoxes = document.querySelectorAll(`.candidate-checkbox[data-position-id="${positionId}"]:checked`);
 
-    // Update checkbox state for each position based on selected count
-    function updateCheckboxState(positionId) {
-        const selectedCount = document.querySelectorAll(
-            `.candidate-checkbox[data-position-id="${positionId}"]:checked`
-        ).length;
-
-        document.querySelectorAll(`.candidate-checkbox[data-position-id="${positionId}"]`).forEach(checkbox => {
-            checkbox.disabled = !checkbox.checked && selectedCount >= maxVotes[positionId];
+            if (checkedBoxes.length > maxVotes) {
+                this.checked = false;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Maximum Votes Reached',
+                    text: `You can only select ${maxVotes} candidate(s) for this position.`
+                });
+            }
         });
-    }
-
-    // Add change event listeners to all candidate checkboxes
-    document.querySelectorAll('.candidate-checkbox').forEach(checkbox => {
-        const positionId = checkbox.dataset.positionId;
-        checkbox.addEventListener('change', () => updateCheckboxState(positionId));
     });
 
-    // Handle form submission
-    voteForm.addEventListener('submit', async function (e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        if (confirm('Are you sure you want to cast your vote? This action cannot be undone.')) {
-            const selectedCandidates = Array.from(
-                document.querySelectorAll('input[type="checkbox"]:checked')
-            ).map(checkbox => ({
-                candidate_id: checkbox.value,
-                position_id: checkbox.dataset.positionId || null
-            }));
+        // Collect votes
+        const votes = [];
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                votes.push({
+                    candidate_id: checkbox.value,
+                    position_id: checkbox.getAttribute('data-position-id')
+                });
+            }
+        });
 
-            try {
-                const response = await fetch(voteStoreRoute, {
+        // Confirm vote submission
+        Swal.fire({
+            title: 'Confirm Your Vote',
+            text: 'Are you sure you want to submit your vote? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, submit my vote!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit votes
+                fetch(voteStoreRoute, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     },
                     body: JSON.stringify({
                         election_id: electionId,
-                        candidates: selectedCandidates,
-                    }),
+                        votes: votes
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Your vote has been cast successfully!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = studentHomeRoute;
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: data.message || 'Failed to cast vote. Please try again.'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while submitting your vote. Please try again.'
+                    });
                 });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('Vote cast successfully!');
-                    window.location.href = studentHomeRoute;
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An unexpected error occurred. Please try again.');
             }
-        }
+        });
     });
 });

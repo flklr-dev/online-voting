@@ -34,16 +34,31 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Admin added successfully!");
-                addAdminModal.style.display = "none";
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Admin added successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    addAdminModal.style.display = "none";
+                    location.reload();
+                });
             } else {
-                alert("Error adding admin: " + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error adding admin'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert("An error occurred. Please try again.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred. Please try again.'
+            });
         });
     };
 
@@ -108,16 +123,31 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Admin updated successfully!");
-                document.getElementById('editAdminModal').style.display = 'none';
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Admin updated successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    document.getElementById('editAdminModal').style.display = 'none';
+                    location.reload();
+                });
             } else {
-                alert("Error updating admin: " + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error updating admin'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert("An error occurred. Please try again.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while updating the admin.'
+            });
         });
     };
     
@@ -127,28 +157,53 @@ document.addEventListener("DOMContentLoaded", function () {
             const adminId = button.getAttribute('data-admin-id');
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
-            if (confirm('Are you sure you want to delete this admin?')) {
-                fetch(`/admins/${adminId}`, {
-                    method: 'DELETE', // Ensure DELETE method is used
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Admin deleted successfully!");
-                        location.reload();
-                    } else {
-                        alert("Error deleting admin: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("An error occurred while deleting the admin.");
-                });
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You want to delete this admin?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admins/${adminId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Admin has been deleted.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Error deleting admin'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the admin.'
+                        });
+                    });
+                }
+            });
         };
     });
     

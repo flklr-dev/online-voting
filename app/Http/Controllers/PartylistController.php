@@ -14,11 +14,39 @@ class PartylistController extends Controller
                 'name' => 'required|string|max:100|unique:partylists'
             ]);
 
-            Partylist::create($validatedData);
+            $partylist = Partylist::create($validatedData);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Partylist added successfully!'
+                'message' => 'Partylist added successfully!',
+                'partylist' => $partylist
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $partylist = Partylist::findOrFail($id);
+            
+            // Check if partylist is being used by any candidates
+            if ($partylist->candidates()->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete partylist as it is being used by candidates.'
+                ], 400);
+            }
+
+            $partylist->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Partylist deleted successfully!'
             ]);
         } catch (\Exception $e) {
             return response()->json([

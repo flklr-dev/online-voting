@@ -66,14 +66,32 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Position added successfully!");
-                addPositionModal.style.display = 'none';
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Position added successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    addPositionModal.style.display = 'none';
+                    location.reload();
+                });
             } else {
-                alert("Error: " + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error adding position'
+                });
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred. Please try again.'
+            });
+        });
     };
 
     // Edit Position
@@ -89,10 +107,12 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     });
 
+    // Edit Position Form Submission
     document.getElementById('editPositionForm').onsubmit = function (e) {
         e.preventDefault();
         const positionId = this.getAttribute('data-position-id');
         const formData = new FormData(this);
+        formData.append('_method', 'PUT');
 
         fetch(`/positions/${positionId}`, {
             method: 'POST',
@@ -104,14 +124,32 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Position updated successfully!");
-                editPositionModal.style.display = 'none';
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Position updated successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    editPositionModal.style.display = 'none';
+                    location.reload();
+                });
             } else {
-                alert("Error: " + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Error updating position'
+                });
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while updating the position.'
+            });
+        });
     };
 
     // Delete Position
@@ -120,25 +158,53 @@ document.addEventListener("DOMContentLoaded", function () {
             const positionId = button.getAttribute('data-id');
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            if (confirm('Are you sure you want to delete this position?')) {
-                fetch(`/positions/${positionId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Position deleted successfully!");
-                        location.reload();
-                    } else {
-                        alert("Error: " + data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You want to delete this position?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/positions/${positionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Position has been deleted.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Error deleting position'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the position.'
+                        });
+                    });
+                }
+            });
         };
     });
 

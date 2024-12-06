@@ -26,41 +26,13 @@
                 <div class="profile-info">
                     <h2>{{ $student->fullname }}</h2>
                     <p>Student ID: {{ $student->student_id }}</p>
+                    <p>Faculty: {{ $student->faculty }}</p>
+                    <p>Program: {{ $student->program }}</p>
                 </div>
 
                 <form action="{{ route('profile.update') }}" method="POST" class="profile-form">
                     @csrf
                     @method('PUT')
-
-                    <div class="form-group">
-                        <label for="faculty">Faculty</label>
-                        <select id="faculty" name="faculty" required>
-                            <option value="" disabled>Select Faculty</option>
-                            @foreach($faculties as $faculty)
-                                <option value="{{ $faculty }}" {{ $student->faculty == $faculty ? 'selected' : '' }}>
-                                    {{ $faculty }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('faculty')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label for="program">Program</label>
-                        <select id="program" name="program" required>
-                            <option value="" disabled>Select Program</option>
-                            @foreach($programs as $program)
-                                <option value="{{ $program }}" {{ $student->program == $program ? 'selected' : '' }}>
-                                    {{ $program }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('program')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
 
                     <div class="password-section">
                         <h3>Change Password</h3>

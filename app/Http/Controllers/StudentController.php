@@ -71,43 +71,44 @@ class StudentController extends Controller
 
     public function update(Request $request, $student_id)
     {
-        $student = Student::findOrFail($student_id);
-
-        $validatedData = $request->validate([
-            'fullname' => 'required|string|max:255',
-            'school_email' => 'required|email|unique:students,school_email,' . $student_id . ',student_id',
-            'student_id' => 'required|string|unique:students,student_id,' . $student_id . ',student_id', // New ID
-            'faculty' => 'required|string',
-            'program' => 'required|string',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        DB::beginTransaction(); // Start a transaction
-
         try {
-            // Step 1: Delete the existing record with the current primary key
-            $student->delete();
+            $student = Student::findOrFail($student_id);
 
-            // Step 2: Create a new record with the updated `student_id`
-            $newStudent = Student::create([
+            $validatedData = $request->validate([
+                'fullname' => 'required|string|max:255',
+                'school_email' => 'required|email|unique:students,school_email,' . $student_id . ',student_id',
+                'student_id' => 'required|string|unique:students,student_id,' . $student_id . ',student_id',
+                'faculty' => 'required|string',
+                'program' => 'required|string',
+                'status' => 'required|in:active,inactive',
+            ]);
+
+            $student->update([
                 'student_id' => $validatedData['student_id'],
                 'fullname' => $validatedData['fullname'],
                 'school_email' => $validatedData['school_email'],
                 'username' => $validatedData['school_email'],
-                'password' => Hash::make($validatedData['student_id']), // Ensure password is hashed
                 'faculty' => $validatedData['faculty'],
                 'program' => $validatedData['program'],
                 'status' => $validatedData['status'],
             ]);
 
-            DB::commit(); // Commit the transaction
+            return response()->json([
+                'success' => true, 
+                'message' => 'Student updated successfully!',
+                'student' => $student
+            ]);
 
-            return response()->json(['success' => true, 'message' => 'Student updated successfully!', 'student' => $newStudent]);
-
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback the transaction if an error occurs
-
-            return response()->json(['success' => false, 'message' => 'Failed to update student.'], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update student.'
+            ], 500);
         }
     }
 
