@@ -27,6 +27,35 @@ class Position extends Model
         'updated_at' => 'datetime',
     ];
 
+    public function getPositionPriority()
+    {
+        $positionName = strtolower($this->position_name);
+        
+        // Priority mapping
+        $priorities = [
+            'president' => 1,
+            'governor' => 1,
+            'mayor' => 1,
+            'vice president' => 2,
+            'vice governor' => 2,
+            'vice mayor' => 2,
+            'secretary' => 3,
+            'treasurer' => 4,
+            'auditor' => 5,
+            'pio' => 6,
+            'business manager' => 7
+        ];
+
+        // Return priority if found, otherwise return 99 (lowest priority)
+        foreach ($priorities as $key => $priority) {
+            if (str_contains($positionName, $key)) {
+                return $priority;
+            }
+        }
+        
+        return 99;
+    }
+
     public function candidates()
     {
         return $this->hasMany(Candidate::class, 'position_id', 'position_id');

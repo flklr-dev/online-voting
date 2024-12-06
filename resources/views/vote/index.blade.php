@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $election->election_name }} - Vote</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     @include('partials.header')
@@ -73,6 +74,5 @@
 
     <script src="{{ asset('js/vote.js') }}"></script>
     <script src="{{ asset('js/script.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

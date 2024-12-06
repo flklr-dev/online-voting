@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Election;
 use App\Models\Candidate;
+use App\Models\Vote;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -183,87 +184,109 @@ class ElectionController extends Controller
     // Display the voting interface for a specific election
     public function voteInterface($election_id)
     {
-        // Ensure the student guard is correctly set and authenticated
         $student = auth('student')->user();
-    
-        // Debugging: Check if the student object and status are correctly loaded
+
         if (!$student) {
             return redirect()->route('ongoing-elections.index')
                 ->with('error', 'Student not authenticated.');
         }
-    
-        // Debug: Check the student's status
+
         if (strtolower($student->status) !== 'active') {
             return redirect()->route('ongoing-elections.index')
                 ->with('error', 'You are not eligible to vote due to inactive status.');
         }
-    
-        $election = Election::with('candidates.position')->findOrFail($election_id);
-    
-        // Check if the student has already voted in the election
-        $alreadyVoted = DB::table('votes')
-            ->where('student_id', $student->student_id)
-            ->where('election_id', $election_id)
-            ->exists();
-    
-        if ($alreadyVoted) {
-            return redirect()->route('ongoing-elections.index')
-                ->with('error', 'You have already voted in this election.');
-        }
-    
-        // Eligibility check based on election type
-        if (
-            $election->election_type === 'Faculty' &&
-            $election->restriction !== $student->faculty
-        ) {
-            return redirect()->route('ongoing-elections.index')
-                ->with('error', 'You are not eligible to vote in this Faculty election.');
-        }
-    
-        if (
-            $election->election_type === 'Program' &&
-            $election->restriction !== $student->program
-        ) {
-            return redirect()->route('ongoing-elections.index')
-                ->with('error', 'You are not eligible to vote in this Program election.');
-        }
-    
-        // If all conditions pass, render the voting interface
+
+        $election = Election::with(['candidates.position', 'candidates.partylist'])
+            ->findOrFail($election_id);
+
+        // Sort candidates by position priority
+        $sortedCandidates = $election->candidates->sort(function ($a, $b) {
+            $priorityA = $a->position->getPositionPriority();
+            $priorityB = $b->position->getPositionPriority();
+            
+            if ($priorityA === $priorityB) {
+                return $a->position->position_name <=> $b->position->position_name;
+            }
+            
+            return $priorityA <=> $priorityB;
+        })->groupBy('position_id');
+
+        // Replace the original candidates with sorted ones
+        $election->setRelation('candidates', collect($sortedCandidates)->flatten());
+
         return view('vote.index', compact('election'));
     }
     
     
     public function storeVote(Request $request)
     {
-        $student = auth()->guard('student')->user();
-    
-        // Check if the student has already voted in this election
-        $alreadyVoted = DB::table('votes')
-            ->where('student_id', $student->student_id)
-            ->where('election_id', $request->election_id)
-            ->exists();
-    
-        if ($alreadyVoted) {
-            return response()->json(['success' => false, 'message' => 'You have already voted in this election.']);
-        }
-    
-        // Store votes in the database
         try {
-            foreach ($request->candidates as $candidate) {
-                DB::table('votes')->insert([
-                    'vote_id' => uniqid(),
-                    'student_id' => $student->student_id,
-                    'election_id' => $request->election_id,
-                    'position_id' => $candidate['position_id'], // Allow null position_id
-                    'candidate_id' => $candidate['candidate_id'],
-                    'vote_date' => now(),
-                ]);
+            DB::beginTransaction();
+            
+            $student = auth()->guard('student')->user();
+            
+            if (!$student) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student not authenticated.'
+                ], 401);
             }
-    
-            return response()->json(['success' => true, 'message' => 'Vote cast successfully!']);
-        } catch (Exception $e) {
-            Log::error('Error storing vote: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Failed to cast vote.'], 500);
+
+            // Validate request
+            $validatedData = $request->validate([
+                'election_id' => 'required|exists:elections,election_id',
+                'candidates' => 'required|array',
+                'candidates.*.candidate_id' => 'required|exists:candidates,candidate_id',
+                'candidates.*.position_id' => 'required|exists:positions,position_id',
+            ]);
+
+            // Check if student has already voted
+            $alreadyVoted = Vote::where('student_id', $student->student_id)
+                ->where('election_id', $request->election_id)
+                ->exists();
+
+            if ($alreadyVoted) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already voted in this election.'
+                ], 400);
+            }
+
+            // Store each vote
+            foreach ($request->candidates as $vote) {
+                $newVote = new Vote();
+                $newVote->vote_id = uniqid('vote_', true);
+                $newVote->student_id = $student->student_id;
+                $newVote->election_id = $request->election_id;
+                $newVote->position_id = $vote['position_id'];
+                $newVote->candidate_id = $vote['candidate_id'];
+                $newVote->vote_date = now();
+                $newVote->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Vote cast successfully!'
+            ]);
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            Log::error('Validation error: ' . json_encode($e->errors()));
+            return response()->json([
+                'success' => false,
+                'message' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Vote casting error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while casting your vote. Please try again.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

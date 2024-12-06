@@ -24,15 +24,29 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
 
         // Collect votes
-        const votes = [];
+        const candidates = [];
+        const positions = new Set();
+        
         checkboxes.forEach(checkbox => {
             if (checkbox.checked) {
-                votes.push({
+                const positionId = checkbox.getAttribute('data-position-id');
+                positions.add(positionId);
+                candidates.push({
                     candidate_id: checkbox.value,
-                    position_id: checkbox.getAttribute('data-position-id')
+                    position_id: positionId
                 });
             }
         });
+
+        // Validate if at least one candidate is selected
+        if (candidates.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'No Selection',
+                text: 'Please select at least one candidate.'
+            });
+            return;
+        }
 
         // Confirm vote submission
         Swal.fire({
@@ -46,15 +60,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 // Submit votes
-                fetch(voteStoreRoute, {
+                fetch('/vote/store', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         election_id: electionId,
-                        votes: votes
+                        candidates: candidates
                     })
                 })
                 .then(response => response.json())
