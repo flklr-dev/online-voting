@@ -2,24 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Authenticatable
 {
     use HasFactory;
 
-    // Specify the table if it doesn't follow Laravel's naming convention
     protected $table = 'students';
-
-    // The primary key associated with the table.
     protected $primaryKey = 'student_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
-    // Indicates if the IDs are auto-incrementing.
-    public $incrementing = false; // Since student_id is a VARCHAR, not an INT.
-
-    // The attributes that are mass assignable.
     protected $fillable = [
         'student_id',
         'fullname',
@@ -27,26 +21,13 @@ class Student extends Authenticatable
         'faculty',
         'program',
         'status',
-        'username', // add this to make sure username is set
-        'password', // add this to make sure password is hashed and saved
+        'username',
+        'password',
     ];
 
-    protected $hidden = ['password']; // Hide password field in responses
-
-    // The attributes that should be cast to native types.
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
-
-    // Define relationships if necessary
-    public function votes()
-    {
-        return $this->hasMany(StudentVote::class, 'student_id');
-    }
-    public function candidates()
-    {
-        return $this->hasMany(Candidate::class, 'student_id', 'student_id');
-    }
 }
 

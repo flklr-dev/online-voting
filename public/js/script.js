@@ -5,9 +5,22 @@ function changeEntries(value) {
 
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
-    const header = document.querySelector('header');
-    sidebar.classList.toggle('minimized');
-    header.classList.toggle('minimized');
+    const mainContent = document.querySelector('.main-content, .main-content2');
+    
+    if (window.innerWidth <= 768) {
+        // Mobile behavior
+        if (sidebar.style.display === 'block') {
+            sidebar.style.display = 'none';
+        } else {
+            sidebar.style.display = 'block';
+        }
+    } else {
+        // Desktop behavior
+        sidebar.classList.toggle('minimized');
+        if (mainContent) {
+            mainContent.classList.toggle('minimized');
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -72,6 +85,43 @@ window.addEventListener("resize", function () {
     const sidebar = document.querySelector('.sidebar');
     if (window.innerWidth <= 768) {
         sidebar.classList.remove('minimized');
+    }
+});
+
+// Add click event listener to close sidebar when clicking outside (mobile only)
+document.addEventListener('click', function(event) {
+    const sidebar = document.querySelector('.sidebar');
+    const burger = document.querySelector('.burger');
+    
+    if (window.innerWidth <= 768 && 
+        !sidebar.contains(event.target) && 
+        !burger.contains(event.target)) {
+        sidebar.style.display = 'none';
+    }
+});
+
+// Prevent sidebar clicks from closing it
+document.querySelector('.sidebar').addEventListener('click', function(event) {
+    event.stopPropagation();
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth > 768) {
+        sidebar.style.display = 'block'; // Always show sidebar on desktop
+    } else {
+        sidebar.style.display = 'none'; // Hide sidebar on mobile by default
+    }
+});
+
+// Initialize sidebar state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth > 768) {
+        sidebar.style.display = 'block';
+    } else {
+        sidebar.style.display = 'none';
     }
 });
 

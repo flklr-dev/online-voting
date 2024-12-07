@@ -222,22 +222,29 @@ document.addEventListener("DOMContentLoaded", function () {
         const endDateInput = document.getElementById("edit_end_date");
         const statusField = document.getElementById("edit_election_status");
 
+        // Destroy existing flatpickr instances if they exist
         if (startDateInput._flatpickr) startDateInput._flatpickr.destroy();
         if (endDateInput._flatpickr) endDateInput._flatpickr.destroy();
 
+        // Format the dates properly
+        const startDate = new Date(election.start_date);
+        const endDate = new Date(election.end_date);
+
+        // Initialize end date picker first
         const endDatePickerEdit = flatpickr(endDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
-            defaultDate: election.end_date.replace(' ', 'T'),
+            defaultDate: endDate,
             onChange: function () {
                 updateElectionStatus(startDateInput.value, endDateInput.value, statusField);
             }
         });
 
+        // Initialize start date picker
         flatpickr(startDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
-            defaultDate: election.start_date.replace(' ', 'T'),
+            defaultDate: startDate,
             onChange: function (selectedDates) {
                 const startDate = selectedDates[0];
                 endDatePickerEdit.set('minDate', startDate);

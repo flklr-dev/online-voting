@@ -6,6 +6,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('logo.png') }}">
     <title>Login</title>
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
@@ -37,6 +38,19 @@
 
             <button type="submit">Login</button>
         </form>
+
+        <div class="divider">
+            <div class="divider-line"></div>
+            <span>or</span>
+            <div class="divider-line"></div>
+        </div>
+
+        <a href="{{ route('google.login') }}" class="google-btn">
+            <div class="google-icon-wrapper">
+                <img class="google-icon" src="{{ asset('images/google-logo.svg') }}" alt="Google logo"/>
+            </div>
+            <p class="btn-text">Sign in with Google</p>
+        </a>
         </div>
 
         @if ($errors->has('login'))

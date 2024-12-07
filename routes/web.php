@@ -13,11 +13,14 @@ use App\Http\Controllers\StudentHomeController;
 use App\Http\Controllers\VotingHistoryController;
 use App\Http\Controllers\PartylistController;
 use App\Http\Controllers\StudentResultController;
+use App\Http\Controllers\VoteController;
 
 // Authentication routes
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login'); // Login form display
 Route::post('/login', [AuthController::class, 'login'])->name('login.post'); // Login form submission
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout'); // Logout
+Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 
 // Admin Routes - Protected by admin middleware
 Route::middleware(['auth:admin'])->group(function () {
@@ -37,6 +40,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/partylists', [PartylistController::class, 'store'])->name('partylists.store');
     Route::get('/get-eligible-students/{election_id}', [CandidateController::class, 'getEligibleStudents']);
     Route::delete('/partylists/{partylist}', [PartylistController::class, 'destroy'])->name('partylists.destroy');
+    Route::get('/admin/voting-history', [VoteController::class, 'adminVotingHistory'])->name('admin.voting-history');
 });
 
 // Student Routes - Protected by student middleware

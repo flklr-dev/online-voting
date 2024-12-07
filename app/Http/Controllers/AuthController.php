@@ -1,8 +1,12 @@
 <?php
 namespace App\Http\Controllers;
 
+use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Student;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class AuthController extends Controller
 {
@@ -36,5 +40,68 @@ class AuthController extends Controller
     {
         Auth::logout();
         return redirect()->route('login');
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')
+            ->with([
+                'hd' => 'dorsu.edu.ph',
+                'prompt' => 'select_account consent',
+                'access_type' => 'offline',
+                'include_granted_scopes' => 'true'
+            ])
+            ->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
+            
+            Log::info('Google user data received:', [
+                'email' => $googleUser->email
+            ]);
+
+            // Check email domain
+            $emailDomain = explode('@', $googleUser->email)[1];
+            if ($emailDomain !== 'dorsu.edu.ph') {
+                return redirect()->route('login')
+                    ->withErrors(['login' => 'Please use your DOrSU student email address.']);
+            }
+
+            // Debug database query
+            $student = Student::where('school_email', $googleUser->email)->first();
+            
+            Log::info('Database query result:', [
+                'email_searched' => $googleUser->email,
+                'student_found' => $student ? 'yes' : 'no',
+                'student_status' => $student ? $student->status : 'n/a'
+            ]);
+
+            if (!$student) {
+                return redirect()->route('login')
+                    ->withErrors(['login' => 'No student account found with email: ' . $googleUser->email]);
+            }
+
+            if ($student->status !== 'active') {
+                return redirect()->route('login')
+                    ->withErrors(['login' => 'Your account is not active.']);
+            }
+
+            Auth::guard('student')->login($student);
+            session(['user_role' => 'student']);
+            
+            return redirect()->route('student-home');
+
+        } catch (\Exception $e) {
+            Log::error('Login error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('login')
+                ->withErrors(['login' => 'Login failed: ' . $e->getMessage()]);
+        }
     }
 }
