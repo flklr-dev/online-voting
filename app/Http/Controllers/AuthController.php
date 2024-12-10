@@ -23,10 +23,15 @@ class AuthController extends Controller
     {
         $credentials = $request->only('username', 'password');
     
-        // Check admin login
+        // Check admin login first
         if (Auth::guard('admin')->attempt($credentials)) {
             session(['user_role' => 'admin']);
-            return redirect()->route('home'); // Redirect to admin dashboard
+            return redirect()->route('home'); // Direct access for admins
+        }
+    
+        // For student login, validate that username is a school email
+        if (!str_ends_with($credentials['username'], '@dorsu.edu.ph')) {
+            return back()->withErrors(['login' => 'Please use your DOrSU email address as username.']);
         }
     
         // Check student login and ensure status is active
@@ -34,7 +39,7 @@ class AuthController extends Controller
         if (Auth::guard('student')->attempt($credentials)) {
             $student = Auth::guard('student')->user();
             
-            // Generate and store OTP
+            // Generate and store OTP only for students
             $otp = Str::random(6);
             DB::table('otp_codes')->insert([
                 'student_id' => $student->student_id,
@@ -56,8 +61,7 @@ class AuthController extends Controller
             return redirect()->route('show.otp.form');
         }
     
-        // If credentials are invalid, set error with key 'login' for easy display
-        return back()->withErrors(['login' => 'Invalid credentials! Please, try again.']);
+        return back()->withErrors(['login' => 'Invalid credentials! Please try again.']);
     }
     
     public function logout()

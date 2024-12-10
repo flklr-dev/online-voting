@@ -31,7 +31,7 @@
         <form action="{{ route('login.post') }}" method="POST">
             @csrf
             <label for="username">Username</label>
-            <input type="text" name="username" id="username" required>
+            <input type="text" name="username" id="username" placeholder="Enter your DOrSU email address" required>
 
             <label for="password">Password</label>
             <input type="password" name="password" id="password" required>

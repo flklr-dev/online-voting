@@ -16,17 +16,21 @@ use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\VoteController;
 
 // Authentication routes
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('login'); // Login form display
-Route::post('/login', [AuthController::class, 'login'])->name('login.post'); // Login form submission
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout'); // Logout
+Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Google OAuth routes (for students only)
 Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+
+// OTP verification routes (for students only)
 Route::get('/verify-otp', [AuthController::class, 'showOtpForm'])->name('show.otp.form');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
 
-// Admin Routes - Protected by admin middleware
+// Admin Routes
 Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/home', [HomeController::class, 'index'])->name('home'); // Admin dashboard
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/admin/profile', [ProfileController::class, 'index'])->name('admin.profile'); // Admin profile
     // Admin management routes
     Route::resource('admins', AdminController::class);
@@ -45,8 +49,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/voting-history', [VoteController::class, 'adminVotingHistory'])->name('admin.voting-history');
 });
 
-// Student Routes - Protected by student middleware
-Route::middleware(['auth:student'])->group(function () { 
+// Student Routes
+Route::middleware(['auth:student'])->group(function () {
     // Student Dashboard
     Route::get('/student-home', [StudentHomeController::class, 'index'])->name('student-home');
     Route::get('/ongoing-elections', [ElectionController::class, 'ongoingElections'])->name('ongoing-elections.index');
