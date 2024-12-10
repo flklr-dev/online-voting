@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Cache;
 
 class AuthController extends Controller
 {
@@ -25,8 +27,9 @@ class AuthController extends Controller
     
         // Check admin login first
         if (Auth::guard('admin')->attempt($credentials)) {
-            session(['user_role' => 'admin']);
-            return redirect()->route('home'); // Direct access for admins
+            // Set session data for admin
+            $this->setSessionData(Auth::guard('admin')->user(), 'admin');
+            return redirect()->route('home');
         }
     
         // For student login, validate that username is a school email
@@ -39,7 +42,7 @@ class AuthController extends Controller
         if (Auth::guard('student')->attempt($credentials)) {
             $student = Auth::guard('student')->user();
             
-            // Generate and store OTP only for students
+            // Generate and store OTP
             $otp = Str::random(6);
             DB::table('otp_codes')->insert([
                 'student_id' => $student->student_id,
@@ -66,7 +69,28 @@ class AuthController extends Controller
     
     public function logout()
     {
+        $user = null;
+        $userType = null;
+
+        if (Auth::guard('admin')->check()) {
+            $user = Auth::guard('admin')->user();
+            $userType = 'admin';
+        } elseif (Auth::guard('student')->check()) {
+            $user = Auth::guard('student')->user();
+            $userType = 'student';
+        }
+
+        if ($user) {
+            // Clear the session token from cache
+            $userSessionKey = "user_session_{$userType}_{$user->getAuthIdentifier()}";
+            Cache::forget($userSessionKey);
+        }
+
+        // Perform logout
         Auth::logout();
+        Session::flush();
+        Session::regenerate();
+
         return redirect()->route('login');
     }
 
@@ -161,12 +185,26 @@ class AuthController extends Controller
         // Clear used OTP
         DB::table('otp_codes')->where('student_id', $studentId)->delete();
 
-        // Log in the student
+        // Log in the student and set session data
         $student = Student::find($studentId);
         Auth::guard('student')->login($student);
-        session(['user_role' => 'student']);
+        $this->setSessionData($student, 'student');
         session()->forget('pending_student_id');
 
         return redirect()->route('student-home');
+    }
+
+    // Helper method to set session data
+    private function setSessionData($user, $role)
+    {
+        // Set session start time and last activity
+        Session::put('session_start', now());
+        Session::put('last_activity', now());
+        Session::put('user_role', $role);
+        
+        // Generate and store session token
+        $sessionId = Session::getId();
+        $userSessionKey = "user_session_{$role}_{$user->getAuthIdentifier()}";
+        Cache::put($userSessionKey, $sessionId, now()->addMinutes(config('session.lifetime')));
     }
 }

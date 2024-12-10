@@ -23,6 +23,8 @@ class Kernel extends HttpKernel
     protected $middlewareGroups = [
         'web' => [
             // ... existing web middleware
+            \App\Http\Middleware\SessionTimeout::class,
+            \App\Http\Middleware\SingleSession::class,
         ],
 
         'api' => [
@@ -46,5 +48,7 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'session.timeout' => \App\Http\Middleware\SessionTimeout::class,
+        'single.session' => \App\Http\Middleware\SingleSession::class,
     ];
 } 
