@@ -4,23 +4,60 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
-use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Auth\AuthenticationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Handler extends ExceptionHandler
 {
-    // ... existing code ...
-
-    public function render($request, Throwable $exception)
+    /**
+     * Register the exception handling callbacks for the application.
+     */
+    public function register(): void
     {
-        if ($exception instanceof AuthorizationException) {
-            return response()->view('errors.403', [], 403);
+        $this->reportable(function (Throwable $e) {
+            // Log detailed error information for debugging
+            Log::error('Error occurred:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        });
+    }
+
+    /**
+     * Render an exception into an HTTP response.
+     */
+    public function render($request, Throwable $e)
+    {
+        // Handle 403 Forbidden errors
+        if ($e instanceof HttpException && $e->getStatusCode() === 403) {
+            return response()->view('errors.403', [
+                'message' => 'You do not have permission to access this page.'
+            ], 403);
         }
 
-        if ($exception instanceof HttpException && $exception->getStatusCode() === 403) {
-            return response()->view('errors.403', [], 403);
+        // Handle 404 Not Found errors
+        if ($e instanceof HttpException && $e->getStatusCode() === 404) {
+            return response()->view('errors.404', [
+                'message' => 'The page you are looking for could not be found.'
+            ], 404);
         }
 
-        return parent::render($request, $exception);
+        // Handle authentication errors
+        if ($e instanceof AuthenticationException) {
+            return redirect()->route('login')
+                ->with('error', 'Please log in to access this page.');
+        }
+
+        // Handle all other errors with a generic 500 error page
+        if (!config('app.debug')) {
+            return response()->view('errors.500', [
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ], 500);
+        }
+
+        return parent::render($request, $e);
     }
 } 
