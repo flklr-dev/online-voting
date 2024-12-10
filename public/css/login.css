@@ -90,7 +90,7 @@ body {
 }
 
 .login-form button {
-    padding: 10px;
+    padding: 12px 30px;
     background-color: #003399;
     color: white;
     border: none;
@@ -98,6 +98,8 @@ body {
     cursor: pointer;
     transition: background-color 0.3s;
     width: 50%;
+    font-size: 16px;
+    margin-top: 10px;
 }
 
 .login-form button:hover {
@@ -106,8 +108,12 @@ body {
 
 /* Error Message */
 .error-message {
-    color: red;
-    margin-top: 10px;
+    color: #dc3545;
+    background-color: #ffe6e6;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 20px;
+    font-size: 14px;
 }
 
 @media (max-width: 768px) {
@@ -210,4 +216,32 @@ body {
     font-weight: 500;
     margin: 0;
     padding: 0;
+}
+
+/* Add these new styles */
+.verification-section {
+    margin-top: 20px;
+    padding: 20px 0;
+}
+
+.verify-title {
+    color: #003399;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.verify-instruction {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.otp-input-container {
+    margin-bottom: 25px;
+}
+
+.otp-input-container input {
+    text-align: center;
+    letter-spacing: 2px;
+    font-size: 16px;
 }

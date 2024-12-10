@@ -46,7 +46,9 @@
                 <div class="stat-item">
                     <h3>Total Votes Cast <i class="fas fa-envelope-open-text"></i></h3>
                     <p>{{ $totalVotesCast }}</p>
-                    <button class="view-more">View More</button>
+                    <button class="view-more">
+                        <a href="{{ route('admin.voting-history') }}">View More</a>
+                    </button>
                 </div>
             </div>
         </div>

@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Student;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -26,10 +30,30 @@ class AuthController extends Controller
         }
     
         // Check student login and ensure status is active
-        $credentials['status'] = 'active'; // Only active students can log in
+        $credentials['status'] = 'active';
         if (Auth::guard('student')->attempt($credentials)) {
-            session(['user_role' => 'student']);
-            return redirect()->route('student-home'); // Redirect to student dashboard
+            $student = Auth::guard('student')->user();
+            
+            // Generate and store OTP
+            $otp = Str::random(6);
+            DB::table('otp_codes')->insert([
+                'student_id' => $student->student_id,
+                'code' => $otp,
+                'expires_at' => Carbon::now()->addMinutes(5),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            // Send OTP email
+            Mail::raw("Your verification code is: $otp\nThis code will expire in 5 minutes.", function($message) use ($student) {
+                $message->to($student->school_email)
+                        ->subject('DOrSU Voting System - Verification Code');
+            });
+
+            // Store student ID in session for verification
+            session(['pending_student_id' => $student->student_id]);
+            
+            return redirect()->route('show.otp.form');
         }
     
         // If credentials are invalid, set error with key 'login' for easy display
@@ -103,5 +127,42 @@ class AuthController extends Controller
             return redirect()->route('login')
                 ->withErrors(['login' => 'Login failed: ' . $e->getMessage()]);
         }
+    }
+
+    public function showOtpForm()
+    {
+        if (!session('pending_student_id')) {
+            return redirect()->route('login');
+        }
+        return view('auth.verify-otp');
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $studentId = session('pending_student_id');
+        if (!$studentId) {
+            return redirect()->route('login');
+        }
+
+        $otp = DB::table('otp_codes')
+            ->where('student_id', $studentId)
+            ->where('code', $request->otp)
+            ->where('expires_at', '>', Carbon::now())
+            ->first();
+
+        if (!$otp) {
+            return back()->withErrors(['otp' => 'Invalid or expired verification code']);
+        }
+
+        // Clear used OTP
+        DB::table('otp_codes')->where('student_id', $studentId)->delete();
+
+        // Log in the student
+        $student = Student::find($studentId);
+        Auth::guard('student')->login($student);
+        session(['user_role' => 'student']);
+        session()->forget('pending_student_id');
+
+        return redirect()->route('student-home');
     }
 }

@@ -21,6 +21,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post'); // 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout'); // Logout
 Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+Route::get('/verify-otp', [AuthController::class, 'showOtpForm'])->name('show.otp.form');
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
 
 // Admin Routes - Protected by admin middleware
 Route::middleware(['auth:admin'])->group(function () {
