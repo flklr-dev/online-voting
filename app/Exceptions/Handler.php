@@ -4,9 +4,9 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Auth\AuthenticationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -29,35 +29,19 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      */
-    public function render($request, Throwable $e)
+    public function render($request, Throwable $exception)
     {
-        // Handle 403 Forbidden errors
-        if ($e instanceof HttpException && $e->getStatusCode() === 403) {
-            return response()->view('errors.403', [
-                'message' => 'You do not have permission to access this page.'
-            ], 403);
+        // Handle 404 (Not Found) errors
+        if ($exception instanceof NotFoundHttpException) {
+            if (Auth::guard('admin')->check()) {
+                return redirect()->route('home')->with('error', 'Page not found.');
+            }
+            
+            if (Auth::guard('student')->check()) {
+                return redirect()->route('student-home')->with('error', 'Page not found.');
+            }
         }
 
-        // Handle 404 Not Found errors
-        if ($e instanceof HttpException && $e->getStatusCode() === 404) {
-            return response()->view('errors.404', [
-                'message' => 'The page you are looking for could not be found.'
-            ], 404);
-        }
-
-        // Handle authentication errors
-        if ($e instanceof AuthenticationException) {
-            return redirect()->route('login')
-                ->with('error', 'Please log in to access this page.');
-        }
-
-        // Handle all other errors with a generic 500 error page
-        if (!config('app.debug')) {
-            return response()->view('errors.500', [
-                'message' => 'An unexpected error occurred. Please try again later.'
-            ], 500);
-        }
-
-        return parent::render($request, $e);
+        return parent::render($request, $exception);
     }
 } 

@@ -120,6 +120,12 @@
                 </div>
             </div>
         </div>
+
+        @if(session('error'))
+            <div class="alert alert-error">
+                {{ session('error') }}
+            </div>
+        @endif
     </main>
 
     @include('partials.footer')

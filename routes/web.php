@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Session;
 
 // Authentication routes
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Google OAuth routes (for students only)

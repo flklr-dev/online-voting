@@ -95,6 +95,12 @@
     </div>
 </div>
 
+@if(session('error'))
+    <div class="alert alert-error">
+        {{ session('error') }}
+    </div>
+@endif
+
 @include('partials.footer')
 
 <script src="{{ asset('js/script.js') }}"></script>
