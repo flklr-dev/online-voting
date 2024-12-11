@@ -330,7 +330,7 @@ footer p {
 
 .election-overview .view-more a {
     text-decoration: none;
-    color: inherit;
+    color: #000;
 }
 
 /* If you want to ensure the button itself maintains consistent styling */
@@ -343,6 +343,7 @@ footer p {
 /* Elections Overview */
 .elections-overview {
     margin-top: 40px;
+    padding-right: 20px;
 }
 
 .elections-overview h2 {
@@ -352,9 +353,10 @@ footer p {
 }
 
 .elections-overview table {
-    width: 98.5%;
+    width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    margin-bottom: 0;
 }
 
 .elections-overview th,
@@ -475,7 +477,7 @@ canvas {
 .btn-add-student:hover,
 .btn-add-election:hover,
 .modal button:hover {
-    background-color: #45a049; /* Darker green on hover */
+    background-color: #45a049;
 }
 
 /* Common Table Styles for Student and Election */
@@ -1200,4 +1202,36 @@ canvas {
         flex-direction: column;
         gap: 15px;
     }
+}
+
+/* Add styles for the election-overview container */
+.election-overview {
+    margin-top: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.election-overview .view-more {
+    width: 100%;
+    position: relative;
+    text-decoration: none;
+    bottom: 0;
+    background-color: #FACB10;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    margin: 0;
+}
+
+/* Add this to ensure the links inside view-more buttons have no text decoration */
+.view-more a {
+    text-decoration: none;
+    color: #000;
+}
+
+/* You can also specifically target the election overview if needed */
+.elections-overview .view-more a {
+    text-decoration: none;
+    color: #000;
 }

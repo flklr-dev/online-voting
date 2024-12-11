@@ -74,5 +74,5 @@ class StudentHomeController extends Controller
 
         return view('student-home', compact('ongoingElections', 'upcomingElections', 'votingHistory'));
     }
-    
+
 }
