@@ -1,3 +1,5 @@
+
+<!--Admin Sidebar -->
 <nav class="sidebar">
     <ul>
         <li><a href="{{ route('home') }}"><i class="fas fa-home"></i> <span>Home</span></a></li>

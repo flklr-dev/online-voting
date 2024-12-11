@@ -28,7 +28,7 @@
         </p>
         <div class="login-form">
         <!-- Login Form -->
-        <form action="{{ route('login.post') }}" method="POST">
+        <form method="POST" action="{{ route('login') }}">
             @csrf
             <label for="username">Username</label>
             <input type="text" name="username" id="username" placeholder="Enter your DOrSU email address" required>

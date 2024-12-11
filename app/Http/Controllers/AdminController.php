@@ -24,15 +24,26 @@ class AdminController extends Controller
     {
         $validatedData = $request->validate([
             'username' => 'required|string|max:255|unique:admins',
-            'password' => 'required|string|min:6',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/[a-z]/',      // at least one lowercase letter
+                'regex:/[A-Z]/',      // at least one uppercase letter
+                'regex:/[0-9]/',      // at least one number
+                'regex:/[@$!%*#?&]/', // at least one special character
+            ],
+        ], [
+            'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
         ]);
 
-        Admin::create([
-            'username' => $validatedData['username'],
-            'password' => bcrypt($validatedData['password']),
-        ]);
+        $validatedData['password'] = bcrypt($validatedData['password']);
+        $admin = Admin::create($validatedData);
 
-        return response()->json(['success' => true, 'message' => 'Admin added successfully'], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin added successfully!'
+        ]);
     }
 
     public function edit($id)

@@ -12,39 +12,45 @@ class SessionTimeout
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
+        if (Auth::guard('admin')->check() || Auth::guard('student')->check()) {
             $currentTime = Carbon::now();
-
-            // Check last activity time
+            
+            // Always check for inactivity timeout
             if (Session::has('last_activity')) {
                 $lastActivity = Carbon::parse(Session::get('last_activity'));
                 
-                // Check for inactivity timeout (5 minutes)
                 if ($currentTime->diffInMinutes($lastActivity) >= config('session.inactivity_timeout')) {
-                    Auth::logout();
-                    Session::flush();
+                    $this->logout();
                     return redirect()->route('login')
                         ->with('error', 'Session expired due to inactivity. Please log in again.');
                 }
             }
 
-            // Check for absolute timeout (30 minutes)
+            // Always check for absolute session timeout
             if (Session::has('session_start')) {
                 $sessionStart = Carbon::parse(Session::get('session_start'));
                 
                 if ($currentTime->diffInMinutes($sessionStart) >= config('session.lifetime')) {
-                    Auth::logout();
-                    Session::flush();
+                    $this->logout();
                     return redirect()->route('login')
                         ->with('error', 'Session expired. Please log in again.');
                 }
             }
 
-            // Update last activity timestamp
+            // Update last activity for ALL requests (removed ajax check)
             Session::put('last_activity', $currentTime);
         }
 
         return $next($request);
+    }
+
+    private function logout()
+    {
+        if (Auth::guard('admin')->check()) {
+            Auth::guard('admin')->logout();
+        } else {
+            Auth::guard('student')->logout();
+        }
+        Session::flush();
     }
 } 

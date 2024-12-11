@@ -8,14 +8,16 @@ use Illuminate\Support\Facades\Auth;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
-        $userRole = session('user_role');
-
-        if ($userRole !== $role) {
-            abort(403);
+        if (Auth::guard('admin')->check() && in_array('admin', $roles)) {
+            return $next($request);
+        }
+        
+        if (Auth::guard('student')->check() && in_array('student', $roles)) {
+            return $next($request);
         }
 
-        return $next($request);
+        abort(403, 'Unauthorized action.');
     }
 } 

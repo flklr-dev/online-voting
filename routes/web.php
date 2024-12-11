@@ -14,6 +14,7 @@ use App\Http\Controllers\VotingHistoryController;
 use App\Http\Controllers\PartylistController;
 use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\VoteController;
+use Illuminate\Support\Facades\Session;
 
 // Authentication routes
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
@@ -63,8 +64,12 @@ Route::middleware(['auth:student'])->group(function () {
     Route::get('/student/results/{election}', [StudentResultController::class, 'show'])->name('student-results.show');
 });
 
-
 // Fallback route in case of undefined routes (Optional)
 Route::fallback(function() {
     return redirect()->route('login');
 });
+
+Route::post('/refresh-session', function () {
+    Session::put('last_activity', now());
+    return response()->json(['success' => true]);
+})->middleware('auth:admin,student');

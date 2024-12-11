@@ -1,3 +1,4 @@
+<!--Student Sidebar -->
 <nav class="sidebar">
     <ul>
         <li><a href="{{ route('student-home') }}"><i class="fas fa-home"></i> <span>Home</span></a></li>
