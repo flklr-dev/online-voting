@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Models\Position;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
+
 class PositionController extends Controller
 {
     public function index(Request $request)
@@ -20,19 +21,30 @@ class PositionController extends Controller
         })->paginate($limit);
 
         return view('positions.index', compact('positions'));
-        
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'position_name' => 'required|string|max:255',
-            'max_vote' => 'required|integer|min:1', // Ensure max_vote is at least 1
-        ]);
-    
-        Position::create($validatedData);
-    
-        return response()->json(['success' => true, 'message' => 'Position added successfully!']);
+        try {
+            $validatedData = $request->validate([
+                'position_name' => 'required|string|max:255',
+                'max_vote' => 'required|integer|min:1',
+            ]);
+        
+            $position = Position::create($validatedData);
+
+            // Log the activity
+            ActivityLogService::log(
+                'create',
+                'Positions',
+                "Created new position: {$position->position_name} (Max votes: {$position->max_vote})"
+            );
+        
+            return response()->json(['success' => true, 'message' => 'Position added successfully!']);
+        } catch (\Exception $e) {
+            Log::error('Error creating position: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to create position.'], 500);
+        }
     }
 
     public function edit($position_id)
@@ -43,21 +55,59 @@ class PositionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $position = Position::findOrFail($id);
-        $validatedData = $request->validate([
-            'position_name' => 'required|string|max:255',
-            'max_vote' => 'required|integer|min:1', // Ensure max_vote is at least 1
-        ]);
-    
-        $position->update($validatedData);
-    
-        return response()->json(['success' => true, 'message' => 'Position updated successfully!']);
+        try {
+            $position = Position::findOrFail($id);
+            $oldData = $position->toArray(); // Store old data for logging
+
+            $validatedData = $request->validate([
+                'position_name' => 'required|string|max:255',
+                'max_vote' => 'required|integer|min:1',
+            ]);
+        
+            $position->update($validatedData);
+
+            // Log the activity with changes
+            $changes = [];
+            foreach ($validatedData as $key => $value) {
+                if ($oldData[$key] != $value) {
+                    $changes[] = "$key: {$oldData[$key]} → $value";
+                }
+            }
+            
+            if (!empty($changes)) {
+                ActivityLogService::log(
+                    'update',
+                    'Positions',
+                    "Updated position: {$position->position_name}. Changes: " . implode(', ', $changes)
+                );
+            }
+        
+            return response()->json(['success' => true, 'message' => 'Position updated successfully!']);
+        } catch (\Exception $e) {
+            Log::error('Error updating position: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to update position.'], 500);
+        }
     }
     
     public function destroy($id)
     {
-        $position = Position::findOrFail($id);
-        $position->delete();
-        return response()->json(['success' => true, 'message' => 'Position deleted successfully!']);
+        try {
+            $position = Position::findOrFail($id);
+            $positionName = $position->position_name; // Store name before deletion
+            
+            $position->delete();
+
+            // Log the activity
+            ActivityLogService::log(
+                'delete',
+                'Positions',
+                "Deleted position: {$positionName}"
+            );
+
+            return response()->json(['success' => true, 'message' => 'Position deleted successfully!']);
+        } catch (\Exception $e) {
+            Log::error('Error deleting position: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to delete position.'], 500);
+        }
     }
 }

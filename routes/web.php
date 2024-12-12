@@ -14,6 +14,7 @@ use App\Http\Controllers\VotingHistoryController;
 use App\Http\Controllers\PartylistController;
 use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Session;
 
 // Authentication routes
@@ -48,6 +49,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/get-eligible-students/{election_id}', [CandidateController::class, 'getEligibleStudents']);
     Route::delete('/partylists/{partylist}', [PartylistController::class, 'destroy'])->name('partylists.destroy');
     Route::get('/admin/voting-history', [VoteController::class, 'adminVotingHistory'])->name('admin.voting-history');
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
 
 // Student Routes

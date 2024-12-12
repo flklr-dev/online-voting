@@ -8,6 +8,7 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash; 
 use Illuminate\Support\Facades\DB;
+use App\Services\ActivityLogService;
 
 
 class StudentController extends Controller
@@ -47,17 +48,23 @@ class StudentController extends Controller
             'program' => 'required|string',
         ]);
 
-        // Set status to 'active' automatically and hash student_id as password
         $student = Student::create([
             'student_id' => $validatedData['student_id'],
             'fullname' => $validatedData['fullname'],
             'school_email' => $validatedData['school_email'],
-            'username' => $validatedData['school_email'], // Use school_email as username
-            'password' => bcrypt($validatedData['student_id']), // Hash student_id as password
+            'username' => $validatedData['school_email'],
+            'password' => bcrypt($validatedData['student_id']),
             'faculty' => $validatedData['faculty'],
             'program' => $validatedData['program'],
-            'status' => 'active', // Automatically set status to 'active'
+            'status' => 'active',
         ]);
+
+        // Log the activity
+        ActivityLogService::log(
+            'create',
+            'Students',
+            "Added new student: {$student->fullname} (ID: {$student->student_id})"
+        );
 
         return response()->json(['success' => true, 'message' => 'Student added successfully!', 'student' => $student]);
     }
@@ -73,6 +80,7 @@ class StudentController extends Controller
     {
         try {
             $student = Student::findOrFail($student_id);
+            $oldData = $student->toArray(); // Store old data for logging
 
             $validatedData = $request->validate([
                 'fullname' => 'required|string|max:255',
@@ -92,6 +100,22 @@ class StudentController extends Controller
                 'program' => $validatedData['program'],
                 'status' => $validatedData['status'],
             ]);
+
+            // Log the activity with changes
+            $changes = [];
+            foreach ($validatedData as $key => $value) {
+                if ($oldData[$key] !== $value) {
+                    $changes[] = "$key: {$oldData[$key]} → $value";
+                }
+            }
+            
+            if (!empty($changes)) {
+                ActivityLogService::log(
+                    'update',
+                    'Students',
+                    "Updated student: {$student->fullname} (ID: {$student->student_id}). Changes: " . implode(', ', $changes)
+                );
+            }
 
             return response()->json([
                 'success' => true, 
@@ -116,14 +140,21 @@ class StudentController extends Controller
     {
         try {
             $student = Student::findOrFail($student_id);
+            $studentName = $student->fullname; // Store name before deletion
+            $studentId = $student->student_id; // Store ID before deletion
+            
             $student->delete();
 
-            // Return JSON response for AJAX requests
+            // Log the activity
+            ActivityLogService::log(
+                'delete',
+                'Students',
+                "Deleted student: {$studentName} (ID: {$studentId})"
+            );
+
             return response()->json(['success' => true, 'message' => 'Student deleted successfully!']);
         } catch (\Exception $e) {
             Log::error('Error deleting student: ' . $e->getMessage());
-
-            // Return JSON response for AJAX requests
             return response()->json(['success' => false, 'message' => 'Failed to delete student.'], 500);
         }
     }

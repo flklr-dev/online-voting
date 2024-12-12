@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Services\ActivityLogService;
 
 class CandidateController extends Controller
 {
@@ -61,10 +62,24 @@ class CandidateController extends Controller
                 $validatedData['picture'] = $fileName;
             }
     
-            Candidate::create($validatedData);
+            $candidate = Candidate::create($validatedData);
+
+            // Get related data for detailed logging
+            $election = Election::find($validatedData['election_id']);
+            $position = Position::find($validatedData['position_id']);
+            $partylist = Partylist::find($validatedData['partylist_id']);
+
+            // Log the activity
+            ActivityLogService::log(
+                'create',
+                'Candidates',
+                "Added new candidate: {$candidate->student_name} for position {$position->position_name} " .
+                "in election '{$election->election_name}' (Partylist: {$partylist->partylist_name})"
+            );
     
             return response()->json(['success' => true, 'message' => 'Candidate added successfully!']);
         } catch (\Exception $e) {
+            Log::error('Error adding candidate: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -73,6 +88,7 @@ class CandidateController extends Controller
     {
         try {
             $candidate = Candidate::findOrFail($id);
+            $oldData = $candidate->toArray(); // Store old data for logging
 
             $validatedData = $request->validate([
                 'student_id' => 'required|exists:students,student_id',
@@ -92,24 +108,67 @@ class CandidateController extends Controller
 
             $candidate->update($validatedData);
 
+            // Get related data for logging changes
+            $changes = [];
+            if ($oldData['position_id'] != $validatedData['position_id']) {
+                $oldPosition = Position::find($oldData['position_id'])->position_name;
+                $newPosition = Position::find($validatedData['position_id'])->position_name;
+                $changes[] = "position: {$oldPosition} → {$newPosition}";
+            }
+            if ($oldData['partylist_id'] != $validatedData['partylist_id']) {
+                $oldPartylist = Partylist::find($oldData['partylist_id'])->partylist_name;
+                $newPartylist = Partylist::find($validatedData['partylist_id'])->partylist_name;
+                $changes[] = "partylist: {$oldPartylist} → {$newPartylist}";
+            }
+            if ($oldData['campaign_statement'] != $validatedData['campaign_statement']) {
+                $changes[] = "campaign statement updated";
+            }
+            if ($request->hasFile('picture')) {
+                $changes[] = "profile picture updated";
+            }
+
+            if (!empty($changes)) {
+                ActivityLogService::log(
+                    'update',
+                    'Candidates',
+                    "Updated candidate: {$candidate->student_name}. Changes: " . implode(', ', $changes)
+                );
+            }
+
             return response()->json(['success' => true, 'message' => 'Candidate updated successfully!']);
         } catch (\Exception $e) {
+            Log::error('Error updating candidate: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    
     public function destroy($id)
     {
-        $candidate = Candidate::find($id);
+        try {
+            $candidate = Candidate::with(['election', 'position'])->find($id);
 
-        if (!$candidate) {
-            return response()->json(['success' => false, 'message' => 'Candidate not found.']);
+            if (!$candidate) {
+                return response()->json(['success' => false, 'message' => 'Candidate not found.']);
+            }
+
+            $candidateName = $candidate->student_name;
+            $electionName = $candidate->election->election_name;
+            $positionName = $candidate->position->position_name;
+
+            $candidate->delete();
+
+            // Log the activity
+            ActivityLogService::log(
+                'delete',
+                'Candidates',
+                "Deleted candidate: {$candidateName} (Position: {$positionName}, Election: {$electionName})"
+            );
+
+            return response()->json(['success' => true, 'message' => 'Candidate deleted successfully!']);
+        } catch (\Exception $e) {
+            Log::error('Error deleting candidate: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to delete candidate.'], 500);
         }
-
-        $candidate->delete();
-
-        return response()->json(['success' => true, 'message' => 'Candidate deleted successfully!']);
     }
 
     public function getEligibleStudents($election_id)

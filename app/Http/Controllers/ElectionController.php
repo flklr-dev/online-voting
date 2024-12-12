@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Validation\ValidationException;
+use App\Services\ActivityLogService;
 
 class ElectionController extends Controller
 {
@@ -69,19 +70,25 @@ class ElectionController extends Controller
                 'restriction' => 'nullable|string',
                 'start_date' => 'required|date|after_or_equal:today',
                 'end_date' => 'required|date|after:start_date',
-                'election_status' => 'required|string|in:Upcoming,Ongoing,Completed', // Capitalized values
+                'election_status' => 'required|string|in:Upcoming,Ongoing,Completed',
             ]);
 
             if ($validatedData['election_type'] === 'General') {
                 $validatedData['restriction'] = 'None';
             }
 
-            Election::create($validatedData);
+            $election = Election::create($validatedData);
+
+            // Log the activity
+            ActivityLogService::log(
+                'create',
+                'Elections',
+                "Created new election: {$election->election_name} (Type: {$election->election_type})"
+            );
 
             return response()->json(['success' => true, 'message' => 'Election added successfully'], 200);
         } catch (Exception $e) {
             Log::error('Error creating election: ' . $e->getMessage());
-
             return response()->json(['success' => false, 'message' => 'Error adding election: ' . $e->getMessage()], 500);
         }
     }
@@ -99,6 +106,7 @@ class ElectionController extends Controller
     {
         try {
             $election = Election::findOrFail($id);
+            $oldData = $election->toArray(); // Store old data for logging
 
             $validatedData = $request->validate([
                 'election_name' => 'required|string',
@@ -111,6 +119,22 @@ class ElectionController extends Controller
             ]);
 
             $election->update($validatedData);
+
+            // Log the activity with changes
+            $changes = [];
+            foreach ($validatedData as $key => $value) {
+                if ($oldData[$key] !== $value) {
+                    $changes[] = "$key: {$oldData[$key]} → $value";
+                }
+            }
+            
+            if (!empty($changes)) {
+                ActivityLogService::log(
+                    'update',
+                    'Elections',
+                    "Updated election: {$election->election_name}. Changes: " . implode(', ', $changes)
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -135,9 +159,17 @@ class ElectionController extends Controller
     public function destroy($id)
     {
         try {
-            // Use the correct primary key column: 'election_id'
             $election = Election::where('election_id', $id)->firstOrFail();
+            $electionName = $election->election_name; // Store name before deletion
+            
             $election->delete();
+
+            // Log the activity
+            ActivityLogService::log(
+                'delete',
+                'Elections',
+                "Deleted election: {$electionName}"
+            );
     
             return response()->json(['success' => true]);
         } catch (Exception $e) {
@@ -294,6 +326,7 @@ class ElectionController extends Controller
     {
         try {
             $election = Election::findOrFail($id);
+            $oldStatus = $election->election_status; // Store old status
     
             $validatedData = $request->validate([
                 'election_status' => 'required|string|in:Upcoming,Ongoing,Completed',
@@ -301,6 +334,13 @@ class ElectionController extends Controller
     
             $election->election_status = $validatedData['election_status'];
             $election->save();
+
+            // Log the status change
+            ActivityLogService::log(
+                'update',
+                'Elections',
+                "Updated election status: {$election->election_name} ({$oldStatus} → {$election->election_status})"
+            );
     
             return response()->json(['success' => true, 'message' => 'Election status updated successfully']);
         } catch (Exception $e) {
