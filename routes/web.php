@@ -16,6 +16,7 @@ use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 // Authentication routes
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
@@ -67,8 +68,14 @@ Route::middleware(['auth:student'])->group(function () {
 });
 
 // Fallback route in case of undefined routes (Optional)
-Route::fallback(function() {
-    return redirect()->route('login');
+Route::fallback(function () {
+    if (Auth::guard('admin')->check()) {
+        return redirect()->route('home');
+    } elseif (Auth::guard('student')->check()) {
+        return redirect()->route('student-home');
+    } else {
+        return redirect()->route('login');
+    }
 });
 
 Route::post('/refresh-session', function () {

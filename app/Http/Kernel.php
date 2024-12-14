@@ -25,6 +25,7 @@ class Kernel extends HttpKernel
             // ... existing web middleware
             \App\Http\Middleware\SessionTimeout::class,
             \App\Http\Middleware\SingleSession::class,
+            \App\Http\Middleware\CheckAuthSession::class,
         ],
 
         'api' => [
@@ -50,5 +51,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'session.timeout' => \App\Http\Middleware\SessionTimeout::class,
         'single.session' => \App\Http\Middleware\SingleSession::class,
+        'check.auth' => \App\Http\Middleware\CheckAuthSession::class,
     ];
-} 
+}

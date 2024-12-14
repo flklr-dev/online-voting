@@ -75,9 +75,11 @@ class AuthController extends Controller
         if (Auth::guard('admin')->check()) {
             $user = Auth::guard('admin')->user();
             $userType = 'admin';
+            Auth::guard('admin')->logout();
         } elseif (Auth::guard('student')->check()) {
             $user = Auth::guard('student')->user();
             $userType = 'student';
+            Auth::guard('student')->logout();
         }
 
         if ($user) {
@@ -86,12 +88,17 @@ class AuthController extends Controller
             Cache::forget($userSessionKey);
         }
 
-        // Perform logout
-        Auth::logout();
+        // Clear all session data
         Session::flush();
-        Session::regenerate();
+        
+        // Regenerate the session ID
+        Session::regenerate(true);
+        
+        // Invalidate and regenerate the CSRF token
+        request()->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')
+            ->with('message', 'You have been successfully logged out.');
     }
 
     public function redirectToGoogle()
@@ -140,12 +147,10 @@ class AuthController extends Controller
                 return redirect()->route('login')
                     ->withErrors(['login' => 'Your account is not active.']);
             }
-
             Auth::guard('student')->login($student);
             session(['user_role' => 'student']);
             
             return redirect()->route('student-home');
-
         } catch (\Exception $e) {
             Log::error('Login error:', [
                 'message' => $e->getMessage(),
